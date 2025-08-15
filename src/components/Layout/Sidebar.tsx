@@ -28,7 +28,7 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    navigate("/app/login");
+    navigate("/login");
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);

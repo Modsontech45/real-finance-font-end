@@ -205,7 +205,7 @@ const SignupPage: React.FC = () => {
 
               <div className="mt-6">
                 <Link
-                  to="/app/login"
+                  to="/login"
                   className="w-full flex justify-center py-3 px-4 border border-white/30 rounded-lg shadow-sm text-sm font-medium text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200"
                 >
                   Sign in to existing account

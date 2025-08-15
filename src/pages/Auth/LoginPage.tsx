@@ -127,7 +127,7 @@ const LoginPage: React.FC = () => {
 
               <div className="mt-6">
                 <Link
-                  to="/app/signup"
+                  to="/signup"
                   className="w-full flex justify-center py-3 px-4 border border-white/30 rounded-lg shadow-sm text-sm font-medium text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                 >
                   Create admin account
