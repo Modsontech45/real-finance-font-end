@@ -1,0 +1,112 @@
+import { Transaction, Report, User } from '../types';
+
+export const mockTransactions: Transaction[] = [
+  {
+    id: '1',
+    date: '2024-01-15',
+    name: 'Product Sales',
+    amount: 5000,
+    type: 'income',
+    comment: 'Q1 product sales revenue',
+    createdAt: '2024-01-15T10:30:00Z',
+  },
+  {
+    id: '2',
+    date: '2024-01-20',
+    name: 'Office Rent',
+    amount: 2000,
+    type: 'expense',
+    comment: 'Monthly office rent payment',
+    createdAt: '2024-01-20T14:00:00Z',
+  },
+  {
+    id: '3',
+    date: '2024-01-25',
+    name: 'Service Revenue',
+    amount: 3500,
+    type: 'income',
+    comment: 'Consulting services',
+    createdAt: '2024-01-25T09:15:00Z',
+  },
+  {
+    id: '4',
+    date: '2024-02-01',
+    name: 'Equipment Purchase',
+    amount: 1200,
+    type: 'expense',
+    comment: 'New computers and hardware',
+    createdAt: '2024-02-01T11:45:00Z',
+  },
+  {
+    id: '5',
+    date: '2024-02-10',
+    name: 'License Sales',
+    amount: 8000,
+    type: 'income',
+    comment: 'Software license revenue',
+    createdAt: '2024-02-10T16:20:00Z',
+  },
+];
+
+export const mockReports: Report[] = [
+  {
+    id: '1',
+    title: 'Q1 Financial Summary',
+    type: 'pdf',
+    fileUrl: '#',
+    uploadDate: '2024-01-31',
+    keywords: ['Q1', 'financial', 'summary'],
+  },
+  {
+    id: '2',
+    title: 'Monthly Expense Report',
+    type: 'text',
+    content: 'Detailed breakdown of monthly expenses including office rent, utilities, and operational costs.',
+    uploadDate: '2024-02-15',
+    keywords: ['monthly', 'expenses', 'operational'],
+  },
+  {
+    id: '3',
+    title: 'Revenue Analysis',
+    type: 'pdf',
+    fileUrl: '#',
+    uploadDate: '2024-02-28',
+    keywords: ['revenue', 'analysis', 'growth'],
+  },
+];
+
+export const mockMembers: User[] = [
+  {
+    id: '1',
+    username: 'admin',
+    email: 'admin@company.com',
+    companyName: 'Tech Corp',
+    country: 'US',
+    phone: '+1234567890',
+    role: 'admin',
+    isVerified: true,
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    username: 'john_doe',
+    email: 'john@company.com',
+    companyName: 'Tech Corp',
+    country: 'US',
+    phone: '+1234567891',
+    role: 'viewer',
+    isVerified: true,
+    createdAt: '2024-01-15T00:00:00Z',
+  },
+  {
+    id: '3',
+    username: 'jane_smith',
+    email: 'jane@company.com',
+    companyName: 'Tech Corp',
+    country: 'CA',
+    phone: '+1234567892',
+    role: 'viewer',
+    isVerified: true,
+    createdAt: '2024-02-01T00:00:00Z',
+  },
+];

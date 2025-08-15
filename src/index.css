@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme-based styles */
+.light {
+  --bg-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  --bg-primary: linear-gradient(135deg, #1e3a8a 0%, #1e1b4b 100%);
+  --bg-card: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Compact view styles */
+.compact .p-4 {
+  padding: 0.75rem;
+}
+
+.compact .p-6 {
+  padding: 1rem;
+}
+
+.compact .p-8 {
+  padding: 1.5rem;
+}
+
+.compact .space-y-6 > * + * {
+  margin-top: 1rem;
+}
+
+.compact .space-y-4 > * + * {
+  margin-top: 0.75rem;
+}
+
+.compact .text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.compact .text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
+/* Animation control */
+.animations-enabled * {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+:not(.animations-enabled) * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Light theme overrides */
+.light .bg-gradient-to-br {
+  background: var(--bg-primary);
+}
+
+.light .bg-white\/10 {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+}
+
+.light .text-white {
+  color: var(--text-primary);
+}
+
+.light .text-white\/80 {
+  color: var(--text-secondary);
+}
+
+.light .text-white\/70 {
+  color: #718096;
+}
+
+.light .text-white\/60 {
+  color: #a0aec0;
+}
+
+.light .border-white\/20 {
+  border-color: var(--border-color);
+}
+
+.light .border-white\/30 {
+  border-color: rgba(0, 0, 0, 0.15);
+}
