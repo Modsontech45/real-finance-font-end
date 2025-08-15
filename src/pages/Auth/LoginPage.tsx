@@ -18,7 +18,8 @@ const schema = yup.object({
 });
 
 const LoginPage: React.FC = () => {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const navigate = useNavigate();
 
   const {
@@ -31,13 +32,17 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = async (data: LoginData, event?: React.FormEvent) => {
     event?.preventDefault(); // ensure default is prevented
+    setIsSubmitting(true);
     try {
       await login(data.email, data.password);
       toast.success("Welcome back!");
       navigate("/app/dashboard");
     } catch (error) {
       toast.error("Invalid email or password");
+    } finally {
+      setIsSubmitting(false);
     }
+
   };
 
   return (
@@ -100,7 +105,7 @@ const LoginPage: React.FC = () => {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105"
-                loading={isLoading}
+                loading={isSubmitting}
               >
                 Sign in
               </Button>
