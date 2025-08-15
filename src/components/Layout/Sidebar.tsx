@@ -28,14 +28,14 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
-    navigate("/app/login");
+    navigate("/login");
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   const navItems = [
-    { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { to: "/reports", icon: TrendingUp, label: "Reports" },
     { to: "/notice-board", icon: MessageSquare, label: "Notice Board" },
     { to: "/members", icon: Users, label: "Members", adminOnly: true },
