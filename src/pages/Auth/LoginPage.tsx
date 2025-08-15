@@ -29,7 +29,8 @@ const LoginPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: LoginData) => {
+  const onSubmit = async (data: LoginData, event?: React.FormEvent) => {
+    event?.preventDefault(); // ensure default is prevented
     try {
       await login(data.email, data.password);
       toast.success("Welcome back!");
@@ -42,22 +43,22 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex flex-col py-8 px-4 sm:px-6 lg:px-8">
       <div className="flex-1 flex flex-col justify-center">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="flex justify-center">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+          <div className="flex justify-center mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
               <FileText className="w-7 h-7 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-center text-2xl lg:text-3xl font-bold text-white">
+          <h2 className="text-2xl lg:text-3xl font-bold text-white">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-white/80">
+          <p className="text-sm text-white/80 mt-2">
             Access your financial dashboard
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-          <Card className="shadow-xl border-0 bg-white/10 backdrop-blur-sm border border-white/20">
+          <Card className="shadow-xl border-0 bg-white/10 backdrop-blur-sm border-white/20">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <Input
                 label="Email Address"
@@ -79,29 +80,21 @@ const LoginPage: React.FC = () => {
               />
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                <div className="flex items-center">
+                <label className="flex items-center text-sm text-white">
                   <input
                     id="remember-me"
-                    name="remember-me"
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-white/30 bg-white/10 rounded"
                   />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 block text-sm text-white"
-                  >
-                    Remember me
-                  </label>
-                </div>
+                  <span className="ml-2">Remember me</span>
+                </label>
 
-                <div className="text-sm">
-                  <Link
-                    to="/forgot-password"
-                    className="font-medium text-blue-300 hover:text-blue-200"
-                  >
-                    Forgot your password?
-                  </Link>
-                </div>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-blue-300 hover:text-blue-200"
+                >
+                  Forgot your password?
+                </Link>
               </div>
 
               <Button
@@ -114,29 +107,26 @@ const LoginPage: React.FC = () => {
             </form>
 
             <div className="mt-6">
-              <div className="relative">
+              <div className="relative text-center">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-white/30" />
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white/80">
-                    New to FinanceTracker?
-                  </span>
-                </div>
+                <span className="relative px-2 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white/80">
+                  New to FinanceTracker?
+                </span>
               </div>
 
-              <div className="mt-6">
-                <Link
-                  to="/signup"
-                  className="w-full flex justify-center py-3 px-4 border border-white/30 rounded-lg shadow-sm text-sm font-medium text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                >
-                  Create admin account
-                </Link>
-              </div>
+              <Link
+                to="/signup"
+                className="mt-6 w-full block text-center py-3 px-4 border border-white/30 rounded-lg shadow-sm text-sm font-medium text-white bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-200"
+              >
+                Create admin account
+              </Link>
             </div>
           </Card>
         </div>
       </div>
+
       <Footer />
     </div>
   );
