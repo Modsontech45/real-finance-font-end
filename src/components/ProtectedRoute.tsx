@@ -15,11 +15,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!user) {
     console.log(user);
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/app/login" replace />;
   }
 
   if (adminOnly && !user.roles?.includes("super_admin")) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/app/dashboard" replace />;
   }
 
   return <>{children}</>;

@@ -70,7 +70,7 @@ const EmailVerificationPage: React.FC = () => {
               </Button>
 
               <Link
-                to="/login"
+                to="/app/login"
                 className="block w-full text-center py-2 px-4 border border-white/30 rounded-lg shadow-sm text-sm font-medium text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Back to login
