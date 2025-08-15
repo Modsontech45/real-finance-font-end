@@ -49,7 +49,7 @@ const EmailVerification: React.FC = () => {
   }, [token]);
 
   const handleLogin = () => {
-    navigate('/login');
+    navigate('/app/login');
   };
 
   return (

@@ -78,7 +78,7 @@ const ForgotPasswordPage: React.FC = () => {
 
           <div className="mt-6 text-center">
             <Link
-              to="/login"
+              to="/app/login"
               className="font-medium text-blue-300 hover:text-blue-200"
             >
               Back to login
