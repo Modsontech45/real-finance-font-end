@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://financebackend-oz4s.onrender.com/api' //|| 'http://localhost:3000/api';
+const API_BASE_URL = 'https://finance-backendsynctuario.onrender.com/api' //|| 'http://localhost:3000/api';
 
 // API client configuration
 class ApiClient {

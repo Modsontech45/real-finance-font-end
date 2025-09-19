@@ -17,13 +17,23 @@ import {
   Crown,
   Eye,
 } from "lucide-react";
+import { UserRole } from "../../types";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface InviteFormData {
   email: string;
-  role: "viewer";
+  role: UserRole;
 }
 
 const MembersPage: React.FC = () => {
+  const { user } = useAuth();
+  const userRoles = React.useMemo(() => user?.roles, [user?.roles]);
+  const isAdmin = React.useMemo(
+    () =>
+      userRoles === "super_admin" ||
+      (Array.isArray(userRoles) && userRoles.includes("super_admin")),
+    [userRoles]
+  );
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { members, isLoading, isInviting, inviteMember, removeMember } =
     useMembers();
@@ -34,12 +44,12 @@ const MembersPage: React.FC = () => {
     formState: { errors },
     reset,
   } = useForm<InviteFormData>({
-    defaultValues: { role: "viewer" },
+    defaultValues: { role: UserRole.MEMBER },
   });
 
   const onSubmit = async (data: InviteFormData) => {
     try {
-      await inviteMember(data.email);
+      await inviteMember(data.email, [data.role]);
       reset();
       setShowInviteForm(false);
     } catch (error) {
@@ -48,13 +58,13 @@ const MembersPage: React.FC = () => {
   };
 
   const handleRemoveMember = removeMember;
-  const memberRoles = members.map((m) => m.roles.map((r) => r.name)).flat();
+  const memberRoles = members.map((m) => m.roles.map((r) => r)).flat();
   const adminCount = members.filter((m) =>
-    m.roles.some((r) => r.name === "super_admin")
+    m.roles.some((r) => r === "super_admin")
   ).length;
 
   const viewerCount = members.filter((m) =>
-    m.roles.some((r) => r.name === "member" || r.name === "manager")
+    m.roles.some((r) => r === "member" || r === "manager")
   ).length;
 
   console.log(
@@ -74,16 +84,18 @@ const MembersPage: React.FC = () => {
             Manage team access and permissions
           </p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 lg:mt-0">
-          <Button
-            onClick={() => setShowInviteForm(!showInviteForm)}
-            variant="secondary"
-            className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 text-sm lg:text-base"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Invite Member</span>
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex items-center space-x-3 mt-4 lg:mt-0">
+            <Button
+              onClick={() => setShowInviteForm(!showInviteForm)}
+              variant="secondary"
+              className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 text-sm lg:text-base"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Invite Member</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Statistics */}
@@ -132,7 +144,7 @@ const MembersPage: React.FC = () => {
       </div>
 
       {/* Invite Form */}
-      {showInviteForm && (
+      {showInviteForm && isAdmin && (
         <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-black text-black">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl lg:text-2xl font-bold text-black">
@@ -167,14 +179,25 @@ const MembersPage: React.FC = () => {
                 <label className="block text-sm font-medium text-black mb-1"></label>
                 <select
                   {...register("role")}
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black p-2"
-                  defaultValue="viewer"
+                  className="block w-full capitalize rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black p-2"
+                  // defaultValue="viewer"
                 >
-                  <option value="viewer">Viewer </option>
-                  <option value="manager">Manager</option>
+                  {Object.values(UserRole).map((role) =>
+                    role !== UserRole.SUPER_ADMIN ? (
+                      <option
+                        key={role}
+                        value={role}
+                        selected={role == UserRole.MEMBER}
+                        className="capitalize"
+                      >
+                        {role}
+                      </option>
+                    ) : null
+                  )}
                 </select>
                 <p className="mt-1 text-sm text-white">
-                  Invited members will have view-only access to financial data
+                  Invited <span className="italic">Members</span> will have
+                  view-only access to financial data
                 </p>
               </div>
             </div>
@@ -215,9 +238,9 @@ const MembersPage: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {members.map((member) => {
-              const isAdmin = member.roles
-                .map((r) => r.name)
-                .includes("super_admin");
+              const adminUser = member.roles
+                .map((r) => r)
+                .includes(UserRole.SUPER_ADMIN);
               return (
                 <div
                   key={member.id}
@@ -232,7 +255,7 @@ const MembersPage: React.FC = () => {
                         <h3 className="text-base lg:text-lg font-medium text-white">
                           {member.username}
                         </h3>
-                        {memberRoles.includes("super_admin") && (
+                        {member.roles.includes(UserRole.SUPER_ADMIN) && (
                           <Crown className="w-4 h-4 text-yellow-500" />
                         )}
                       </div>
@@ -260,26 +283,30 @@ const MembersPage: React.FC = () => {
                     <div className="flex items-center space-x-2 lg:space-x-3">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          isAdmin
+                          adminUser
                             ? "bg-purple-100 text-purple-800"
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {isAdmin ? "Admin" : "Viewer"}
+                        {adminUser
+                          ? "Admin"
+                          : member.roles.includes(UserRole.MANAGER)
+                          ? "Manager"
+                          : "Viewer"}
                       </span>
 
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          member.is_verified
+                          member.isEmailVerified
                             ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
-                        {member.status === "active" ? "Verified" : "Pending"}
+                        {member.isEmailVerified ? "Verified" : "Pending"}
                       </span>
                     </div>
 
-                    {!isAdmin && (
+                    {!adminUser && (
                       <button
                         onClick={() => handleRemoveMember(member.id)}
                         className="text-red-600 hover:text-red-900 transition-colors duration-200 p-1 rounded hover:bg-red-50"

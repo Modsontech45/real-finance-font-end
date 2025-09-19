@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { User } from '../types';
+import { User, UserRole } from '../types';
 import { userService } from '../services/userService';
 import { getAdminData } from '../utils/sessionUtils';
 import toast from 'react-hot-toast';
@@ -29,10 +29,10 @@ export const useMembers = () => {
   }, []);
 
   // Invite a new member
-  const inviteMember = useCallback(async (email: string) => {
+  const inviteMember = useCallback(async (email: string, roles?:UserRole[]) => {
     setIsInviting(true);
     try {
-      await userService.inviteMember(email);
+      await userService.inviteMember(email, roles);
       toast.success(`Invitation sent to ${email}`);
       await fetchMembers(); // refresh members after invite
     } catch (error: any) {

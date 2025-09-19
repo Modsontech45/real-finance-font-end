@@ -1,3 +1,12 @@
+import { AuthResponse } from "../services/authService";
+
+
+export enum UserRole {
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  MEMBER = 'member',
+  MANAGER = 'manager',
+}
 export interface User {
   id: string;
   firstName: string;
@@ -13,9 +22,9 @@ export interface User {
   country?: string;
   phoneNumber?: string | null;
   profilePicture?: string | null;
-  roles: 'super_admin' | 'viewer' | string[]; // actual object has ['super_admin']
+  roles: UserRole[]; // actual object has ['super_admin']
   permissions?: string[]; // e.g., ['*:*']
-  is_verified?: boolean;
+  isEmailVerified?: boolean;
   created_at?: string;
 }
 
@@ -49,10 +58,12 @@ export interface Subscription {
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
-  signup: (data: SignupData) => Promise<void>;
+  signup: (data: SignupData) => Promise<AuthResponse>;
+  refreshUser: () => Promise<User | null>;
   isLoading: boolean;
+  isAuthenticated: boolean;
 }
 
 export interface SignupData {

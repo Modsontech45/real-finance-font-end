@@ -49,15 +49,14 @@ async createTransaction(data: TransactionFormData): Promise<Transaction> {
     throw new Error('Cannot create transaction: Admin user ID not found.');
   }
 
-  const payload = {
-    name: data.name,
-    amount: data.amount,
-    type: data.type.trim().toLowerCase(), // Normalize 'type' string
-    department: "software",                // Hardcoded department, adjust if needed
-    transaction_date: data.date,
-    comment: data.comment,
-    user_id: admin.id,                    // Use admin ID for association
-  };
+const payload = {
+  name: data.name,
+  amount: data.amount,
+  type: data.type.trim().toLowerCase(), // "income" or "expense"
+  comment: data.comment,
+  transactionDate: new Date(data.date).toISOString() // ISO string
+};
+
 
   const response = await apiClient.post<TransactionResponse>('/transactions', payload);
   // Uncomment for debugging:

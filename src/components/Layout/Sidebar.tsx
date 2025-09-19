@@ -36,12 +36,12 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { to: "/reports", icon: TrendingUp, label: "Reports" },
-    { to: "/notice-board", icon: MessageSquare, label: "Notice Board" },
-    { to: "/members", icon: Users, label: "Members", adminOnly: true },
-    { to: "/profile", icon: User, label: "Profile" },
-    { to: "/subscription", icon: CreditCard, label: "Subscription" },
-    { to: "/settings", icon: Settings, label: "Settings", adminOnly: true },
+    { to: "/app/reports", icon: TrendingUp, label: "Reports" },
+    { to: "/app/notice-board", icon: MessageSquare, label: "Notice Board" },
+    { to: "/app/members", icon: Users, label: "Members", adminOnly: true },
+    { to: "/app/profile", icon: User, label: "Profile" },
+    { to: "/app/subscription", icon: CreditCard, label: "Subscription" },
+    { to: "/app/settings", icon: Settings, label: "Settings", adminOnly: true },
   ];
 
   const filteredNavItems = navItems.filter(
