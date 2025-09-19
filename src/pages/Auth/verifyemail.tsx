@@ -1,47 +1,50 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   Shield,
   CheckCircle,
   XCircle,
   Loader2,
   Mail,
-  ArrowRight
-} from 'lucide-react';
+  ArrowRight,
+} from "lucide-react";
+import { apiClient } from "../../services/api";
 
 const API_BASE = "http://localhost:3000/api";
 
 const EmailVerification: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token')
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+  const token = searchParams.get("token");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const verifyEmail = async () => {
       if (!token) {
-        setStatus('error');
-        setMessage('Verification token is missing.');
+        setStatus("error");
+        setMessage("Verification token is missing.");
         return;
       }
 
       try {
-        console.log(token)
-        const response = await fetch(`${API_BASE}/auth/verify-email?token=${token}`);
-        const data = await response.json();
+        console.log(token);
+        const data = await apiClient.get(`/auth/verify-email?token=${token}`);
+        // const data = await response.json();
 
         if (response.ok) {
-          setStatus('success');
-          setMessage(data.message || 'Email verified successfully.');
+          setStatus("success");
+          setMessage(data.message || "Email verified successfully.");
         } else {
-          setStatus('error');
-          setMessage(data.error || 'Invalid or expired verification link.');
+          setStatus("error");
+          setMessage(data.error || "Invalid or expired verification link.");
         }
       } catch (err) {
-        console.error('Verification error:', err);
-        setStatus('error');
-        setMessage('Server error occurred. Please try again.');
+        console.error("Verification error:", err);
+        setStatus("error");
+        setMessage("Server error occurred. Please try again.");
       }
     };
 
@@ -49,7 +52,7 @@ const EmailVerification: React.FC = () => {
   }, [token]);
 
   const handleLogin = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -59,7 +62,7 @@ const EmailVerification: React.FC = () => {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
         />
       </div>
@@ -92,17 +95,21 @@ const EmailVerification: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {status === 'loading' && (
+              {status === "loading" && (
                 <>
                   <Loader2 className="w-12 h-12 text-green-400 animate-spin mx-auto" />
-                  <p className="text-green-300 text-lg">Verifying your email...</p>
+                  <p className="text-green-300 text-lg">
+                    Verifying your email...
+                  </p>
                 </>
               )}
 
-              {status === 'success' && (
+              {status === "success" && (
                 <>
                   <CheckCircle className="w-16 h-16 text-green-400 mx-auto" />
-                  <p className="text-green-300 text-lg font-semibold">✅ {message}</p>
+                  <p className="text-green-300 text-lg font-semibold">
+                    ✅ {message}
+                  </p>
                   <button
                     onClick={handleLogin}
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
@@ -113,10 +120,12 @@ const EmailVerification: React.FC = () => {
                 </>
               )}
 
-              {status === 'error' && (
+              {status === "error" && (
                 <>
                   <XCircle className="w-16 h-16 text-red-400 mx-auto" />
-                  <p className="text-red-300 text-lg font-semibold">❌ {message}</p>
+                  <p className="text-red-300 text-lg font-semibold">
+                    ❌ {message}
+                  </p>
                   <button
                     onClick={handleLogin}
                     className="w-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-3"
@@ -128,17 +137,17 @@ const EmailVerification: React.FC = () => {
               )}
             </div>
 
-            {(status === 'success' || status === 'error') && (
+            {(status === "success" || status === "error") && (
               <div
                 className={`rounded-lg p-4 text-sm text-center ${
-                  status === 'success'
-                    ? 'bg-green-500/10 border border-green-500/30 text-green-300'
-                    : 'bg-red-500/10 border border-red-500/30 text-red-300'
+                  status === "success"
+                    ? "bg-green-500/10 border border-green-500/30 text-green-300"
+                    : "bg-red-500/10 border border-red-500/30 text-red-300"
                 }`}
               >
-                {status === 'success'
-                  ? 'Your email has been verified successfully. You can now log in.'
-                  : 'Please ensure you have a valid verification link or contact support.'}
+                {status === "success"
+                  ? "Your email has been verified successfully. You can now log in."
+                  : "Please ensure you have a valid verification link or contact support."}
               </div>
             )}
           </div>
