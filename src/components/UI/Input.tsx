@@ -72,7 +72,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={inputType}
             ref={ref}
             className={clsx(
-              "peer w-full px-2 py-1 bg-white/5 backdrop-blur-sm border-2 rounded-xl transition-all duration-300 ease-in-out",
+              "peer w-full px-1 py-4 bg-white/5 backdrop-blur-sm border-2 rounded-xl transition-all duration-300 ease-in-out",
               isOnWhiteBackground
                 ? "text-black placeholder-gray-500"
                 : "text-white placeholder-transparent",
