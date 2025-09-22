@@ -45,8 +45,12 @@ class ApiClient {
         const errorData = await response.json().catch(() => ({}));
         console.log(errorData);
 
+        // check if error data is array of errors
+        if (Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+          throw new Error(errorData.errors[0].message);
+        }
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`,
+          errorData.errors || errorData.error || `HTTP error! status: ${response.status}`,
         );
       }
 

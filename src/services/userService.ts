@@ -13,9 +13,9 @@ export interface UserResponse {
 class UserService {
   // Fetch all members
   async getMembers(): Promise<User[]> {
-    const response = await apiClient.get<User[]>("/users");
+    const response = await apiClient.get<{ data: User[] }>("/users");
     console.log("[UserService] /users raw:", response);
-    return Array.isArray(response) ? response : [];
+    return response.data || [];
   }
 
   // Invite a new member

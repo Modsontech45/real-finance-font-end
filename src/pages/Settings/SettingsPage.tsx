@@ -20,6 +20,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { UserRole } from "../../types";
+import DepartmentManager from "../../components/UI/DepartmentList";
+import { apiClient } from "../../services/api";
+import { setAdminData } from "../../utils/sessionUtils";
 
 interface NotificationSettings {
   emailNotifications: boolean;
@@ -35,7 +38,7 @@ interface SecuritySettings {
 }
 
 const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   const {
     settings,
@@ -105,18 +108,18 @@ const SettingsPage: React.FC = () => {
 
   const handleExportData = () => {
     toast.success(
-      "Data export initiated. You will receive an email when ready.",
+      "Data export initiated. You will receive an email when ready."
     );
   };
 
   const handleDeleteAccount = () => {
     if (
       window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone.",
+        "Are you sure you want to delete your account? This action cannot be undone."
       )
     ) {
       toast.error(
-        "Account deletion requested. Please check your email for confirmation.",
+        "Account deletion requested. Please check your email for confirmation."
       );
     }
   };
@@ -191,6 +194,27 @@ const SettingsPage: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                <DepartmentManager
+                  initialDepartments={user?.company?.departments || []}
+                  onAddDepartment={async (depts) => {
+                    await apiClient
+                      .put(`/companies/${user?.company?.id}`, {
+                        departments: depts,
+                      })
+                      .catch((err) => {
+                        console.error(err);
+                        // alert("Failed to update departments: " + err.message);
+                        throw err;
+                      });
+                    const updatedUser = {
+                      ...user,
+                      company: { ...user.company, departments: depts },
+                    };
+                    setUser(updatedUser);
+                    setAdminData(updatedUser);
+                  }}
+                />
 
                 <div>
                   <h3 className="text-lg font-medium text-white mb-4">
@@ -379,7 +403,7 @@ const SettingsPage: React.FC = () => {
                         checked={value}
                         onChange={() =>
                           handleNotificationChange(
-                            key as keyof NotificationSettings,
+                            key as keyof NotificationSettings
                           )
                         }
                         className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-white/30 bg-white/10 rounded"

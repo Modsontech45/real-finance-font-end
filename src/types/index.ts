@@ -7,6 +7,11 @@ export enum UserRole {
   MEMBER = "member",
 }
 
+export interface Department {
+  id: string;
+  name: string;
+}
+
 export interface User {
   id: string;
   firstName: string;
@@ -16,6 +21,7 @@ export interface User {
   company?: {
     id: string;
     name: string;
+    departments: Department[]; // 👈 add this
   };
   country?: string;
   phoneNumber?: string | null;
@@ -56,6 +62,7 @@ export interface Subscription {
 
 export interface AuthContextType {
   user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (email: string, password: string) => Promise<LoginResponse>;
   logout: () => void;
   signup: (data: SignupData) => Promise<AuthResponse>;
@@ -84,8 +91,9 @@ export interface TransactionFormData {
   date: string;
   name: string;
   amount: number;
-  type: "income" | "expense";
+  type:  "income" | "expense";
   comment: string;
+  department: string;
 }
 
 export interface LoginResponse {

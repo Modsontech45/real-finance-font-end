@@ -112,10 +112,10 @@ export const getCurrencyByCode = (code: string) => {
 
 export const formatCurrency = (
   amount: number,
-  currencyCode: string = "USD",
+  currencyCode: string = "XOF",
 ) => {
   const currency = getCurrencyByCode(currencyCode);
   if (!currency) return `$${amount.toLocaleString()}`;
 
-  return `${currency.symbol}${amount.toLocaleString()}`;
+  return `${currency.symbol} ${amount.toLocaleString()}`;
 };

@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const value = {
     user,
+    setUser,
     login,
     logout,
     signup,

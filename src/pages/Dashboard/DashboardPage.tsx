@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+// ✅ DashboardPage.tsx
+import React, { useState, useMemo } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { TransactionFormData, UserRole } from "../../types";
 import { useTransactions } from "../../hooks/useTransactions";
+import { useAuth } from "../../contexts/AuthContext";
+
 import Button from "../../components/UI/Button";
 import Input from "../../components/UI/Input";
 import Select from "../../components/UI/Select";
@@ -19,7 +22,7 @@ import {
   MessageSquare,
   Trash2,
 } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
+import { formatCurrency } from "../../utils/currencies";
 
 const schema = yup.object({
   date: yup.string().required("Date is required"),
@@ -30,22 +33,22 @@ const schema = yup.object({
     .required("Amount is required"),
   type: yup.string().oneOf(["income", "expense"]).required("Type is required"),
   comment: yup.string().required("Comment is required"),
+  department: yup.string().required("Department is required"),
 });
 
 const DashboardPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-
   const {
     transactions,
     isLoading,
     isCreating,
     createTransaction,
     deleteTransaction,
-    refetch, // ✅ make sure your hook exposes this
+    refetch,
   } = useTransactions();
-
   const { user } = useAuth();
-  const isAdmin = React.useMemo(
+
+  const isAdmin = useMemo(
     () => user?.roles?.includes(UserRole.SUPER_ADMIN),
     [user?.roles]
   );
@@ -53,6 +56,7 @@ const DashboardPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<TransactionFormData>({
@@ -60,23 +64,37 @@ const DashboardPage: React.FC = () => {
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
       type: "income",
+      department: "",
     },
   });
 
+  const departmentOptions =
+    user?.company?.departments?.map((d, idx) => ({
+      value: d,
+      label: d.charAt(0).toUpperCase() + d.slice(1),
+      key: `${d}-${idx}`,
+    })) || [];
+
+  const typeOptions = [
+    { value: "income", label: "Income" },
+    { value: "expense", label: "Expense" },
+  ];
+
   const onSubmit = async (data: TransactionFormData) => {
     try {
+      // console.log("Submitting transaction:", data);
       await createTransaction(data);
-      await  refetch(); // ✅ refresh list after creation
+      await refetch();
       reset();
       setShowForm(false);
     } catch (error) {
-      // handled by hook
+      console.error(error);
     }
   };
 
   const handleDeleteTransaction = async (id: string) => {
     await deleteTransaction(id);
-    await  refetch(); // ✅ refresh after delete
+    await refetch();
   };
 
   const { totalIncome, totalExpenses } = transactions.reduce(
@@ -90,11 +108,6 @@ const DashboardPage: React.FC = () => {
   );
 
   const netProfit = totalIncome - totalExpenses;
-
-  const typeOptions = [
-    { value: "income", label: "Income" },
-    { value: "expense", label: "Expense" },
-  ];
 
   return (
     <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 text-white pt-16 lg:pt-6">
@@ -123,6 +136,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {/* Total Income */}
         <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
@@ -137,6 +151,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </Card>
 
+        {/* Total Expenses */}
         <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
@@ -146,17 +161,14 @@ const DashboardPage: React.FC = () => {
               </p>
             </div>
             <div className="w-12 h-12 bg-red-400/30 rounded-full flex items-center justify-center">
-              <TrendingDown className="w-6 h-6 text-red-100" />
+              <TrendingDown className="w-6 h-6 text-green-100" />
             </div>
           </div>
         </Card>
 
+        {/* Net Profit */}
         <Card
-          className={`bg-gradient-to-br ${
-            netProfit >= 0
-              ? "from-blue-500 to-blue-600"
-              : "from-orange-500 to-orange-600"
-          } text-white shadow-lg hover:-translate-y-1 transition`}
+          className={`bg-gradient-to-br ${netProfit >= 0 ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600"} text-white shadow-lg hover:-translate-y-1 transition`}
         >
           <div className="flex items-center justify-between">
             <div>
@@ -166,19 +178,16 @@ const DashboardPage: React.FC = () => {
               </p>
             </div>
             <div
-              className={`w-12 h-12 ${
-                netProfit >= 0 ? "bg-blue-400/30" : "bg-orange-400/30"
-              } rounded-full flex items-center justify-center`}
+              className={`w-12 h-12 ${netProfit >= 0 ? "bg-blue-400/30" : "bg-orange-400/30"} rounded-full flex items-center justify-center`}
             >
               <DollarSign
-                className={`w-6 h-6 ${
-                  netProfit >= 0 ? "text-blue-100" : "text-orange-100"
-                }`}
+                className={`w-6 h-6 ${netProfit >= 0 ? "text-blue-100" : "text-orange-100"}`}
               />
             </div>
           </div>
         </Card>
 
+        {/* Transactions Count */}
         <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
@@ -202,7 +211,7 @@ const DashboardPage: React.FC = () => {
             className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"
           >
             <Input
-              label="Date"
+           
               type="date"
               {...register("date")}
               error={errors.date?.message}
@@ -222,11 +231,18 @@ const DashboardPage: React.FC = () => {
               placeholder="0.00"
             />
             <Select
-              label="Type"
+             
               {...register("type")}
               error={errors.type?.message}
               options={typeOptions}
             />
+            <Select
+              label="Department"
+              {...register("department")}
+              error={errors.department?.message}
+              options={departmentOptions}
+            />
+
             <div className="lg:col-span-2">
               <Input
                 label="Comment"
@@ -235,6 +251,16 @@ const DashboardPage: React.FC = () => {
                 placeholder="Add a comment"
               />
             </div>
+
+            {/* Department using Controller */}
+            {/* <Controller
+              name="department"
+              control={control}
+              render={({ field }) => (
+                <Select  {...register("department")} {...field} label="Department" options={departmentOptions} className="lg:col-span-2" error={errors.department?.message} />
+              )}
+            /> */}
+
             <div className="lg:col-span-2 flex justify-end">
               <Button
                 type="submit"
@@ -254,8 +280,7 @@ const DashboardPage: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl lg:text-2xl font-bold">Recent Transactions</h2>
           <span className="text-xs lg:text-sm text-white/80 flex items-center">
-            <Calendar className="w-4 h-4 mr-1 text-white/60" />
-            Last 30 days
+            <Calendar className="w-4 h-4 mr-1 text-white/60" /> Last 30 days
           </span>
         </div>
 
@@ -306,25 +331,18 @@ const DashboardPage: React.FC = () => {
                     </td>
                     <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm">
                       <span
-                        className={`font-semibold ${
-                          t.type === "income"
-                            ? "text-green-400"
-                            : "text-red-400"
-                        }`}
+                        className={`font-semibold ${t.type === "income" ? "text-green-400" : "text-red-400"}`}
                       >
-                        ${Number(t.amount ?? 0).toLocaleString()}
+                        {/* change with currency format function */}
+                        {formatCurrency(Number(t.amount))}
                       </span>
                     </td>
-                    <td className="px-3 lg:px-6 py-4 hidden md:table-cell text-xs lg:text-sm text-white/80">
+                    <td className="px-3 lg:px-6 py-4 hidden capitalize md:table-cell text-xs lg:text-sm text-white/80">
                       {t.department}
                     </td>
                     <td className="px-3 lg:px-6 py-4 hidden sm:table-cell">
                       <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          t.type === "income"
-                            ? "bg-green-500/20 text-green-300"
-                            : "bg-red-500/20 text-red-300"
-                        }`}
+                        className={`px-2 py-1 text-xs font-semibold uppercase rounded-full ${t.type === "income" ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}
                       >
                         {t.type}
                       </span>

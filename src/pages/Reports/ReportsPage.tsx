@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import {
 import { useTransactions } from "../../hooks/useTransactions";
 import Card from "../../components/UI/Card";
 import Input from "../../components/UI/Input";
+import Select from "../../components/UI/Select";
 import LoadingSpinner from "../../components/UI/LoadingSpinner";
 import AnimatedCounter from "../../components/UI/AnimatedCounter";
 import {
@@ -29,12 +30,16 @@ import {
 
 const ReportsPage: React.FC = () => {
   const { transactions, isLoading } = useTransactions();
+
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+
   const [dateRange, setDateRange] = useState({
     startDate: "2025-01-01",
     endDate: tomorrow.toISOString().split("T")[0],
   });
+
+  const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
   // Helper: get valid date from transaction
   const getTransactionDate = (t: any) => {
@@ -44,26 +49,25 @@ const ReportsPage: React.FC = () => {
     return isNaN(d.getTime()) ? null : d;
   };
 
-const start = new Date(dateRange.startDate);
-const end = new Date(dateRange.endDate);
-end.setHours(23, 59, 59, 999); // include the whole day
-  console.log("Selected date range:", start, end);
+  const start = new Date(dateRange.startDate);
+  const end = new Date(dateRange.endDate);
+  end.setHours(23, 59, 59, 999);
 
-  // Filter transactions by date range
-  const filteredTransactions = transactions.filter((t) => {
-    const transactionDate = getTransactionDate(t);
-    if (!transactionDate) return false;
+  // Filter transactions by date range AND department (case-insensitive)
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const transactionDate = getTransactionDate(t);
+      if (!transactionDate) return false;
 
-    return transactionDate >= start && transactionDate <= end;
-  });
-  console.log(
-    "Filtering transactions from",
-    start,
-    "to",
-    end,
-    "this is the filtered transactions:",
-    filteredTransactions,
-  );
+      const withinDate = transactionDate >= start && transactionDate <= end;
+    const matchesDept = selectedDepartment
+  ? t.department?.trim().toLowerCase() === selectedDepartment.toLowerCase()
+  : true;
+console.log("Filtering transaction department:", t, "withinDate:", withinDate, "matchesDept:", matchesDept);
+
+      return withinDate && matchesDept;
+    });
+  }, [transactions, start, end, selectedDepartment]);
 
   // Metrics
   const totalIncome = filteredTransactions
@@ -77,7 +81,6 @@ end.setHours(23, 59, 59, 999); // include the whole day
   const netProfit = totalIncome - totalExpenses;
   const profitMargin = totalIncome > 0 ? (netProfit / totalIncome) * 100 : 0;
 
-  // Highest income and expense
   const highestIncome = filteredTransactions
     .filter((t) => t.type === "income")
     .reduce(
@@ -98,6 +101,21 @@ end.setHours(23, 59, 59, 999); // include the whole day
       { amount: 0, name: "No expenses" },
     );
 
+  // Unique departments
+  const departmentOptions = useMemo(() => {
+    const depts = Array.from(
+      new Set(
+        transactions
+          .map((t) => t.department?.trim().toLowerCase())
+          .filter(Boolean)
+      )
+    );
+    return depts.map((d) => ({
+      value: d,
+      label: d.charAt(0).toUpperCase() + d.slice(1),
+    }));
+  }, [transactions]);
+
   // Year range
   const years = Array.from(
     new Set(
@@ -109,11 +127,10 @@ end.setHours(23, 59, 59, 999); // include the whole day
         .filter((y) => y !== null),
     ),
   );
-
   const currentYear =
     years.length > 0 ? Math.max(...years) : new Date().getFullYear();
 
-  // Monthly chart data
+  // Monthly data
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(currentYear, i, 1).toLocaleString("default", {
       month: "short",
@@ -152,28 +169,63 @@ end.setHours(23, 59, 59, 999); // include the whole day
         </p>
       </div>
 
-      {/* Date Range Filter */}
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-gray-500 text-black">
-        <div className="flex items-center space-x-4">
-          <Calendar className="w-5 h-5 text-black" />
-          <Input
-            label="Start Date"
-            type="date"
-            value={dateRange.startDate}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, startDate: e.target.value }))
+      {/* Filters */}
+     <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-gray-500 text-black flex flex-wrap items-center gap-4 p-4">
+  {/* Date Range Inputs */}
+  <div className="flex items-center space-x-4">
+    <Calendar className="w-5 h-5 text-black" />
+    <Input
+      label="Start Date"
+      type="date"
+      value={dateRange.startDate}
+      onChange={(e) =>
+        setDateRange((prev) => ({ ...prev, startDate: e.target.value }))
+      }
+    />
+    <Input
+      label="End Date"
+      type="date"
+      value={dateRange.endDate}
+      onChange={(e) =>
+        setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
+      }
+    />
+  </div>
+
+  {/* Department Filter */}
+  <div className="flex items-center space-x-2">
+    <Select
+      options={[{ value: "", label: "All Departments" }, ...departmentOptions]}
+      value={
+        selectedDepartment
+          ? {
+              value: selectedDepartment,
+              label:
+                selectedDepartment.charAt(0).toUpperCase() +
+                selectedDepartment.slice(1),
             }
-          />
-          <Input
-            label="End Date"
-            type="date"
-            value={dateRange.endDate}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
-            }
-          />
-        </div>
-      </Card>
+          : { value: "", label: "All Departments" }
+      }
+      onChange={(option) => {
+        if (!option || option.value === "") {
+          setSelectedDepartment(null);
+        } else {
+          setSelectedDepartment(option.value);
+        }
+      }}
+      placeholder="Filter by department"
+      className="w-48"
+    />
+
+    <button
+      onClick={() => setSelectedDepartment(null)}
+      className="px-3 py-1 bg-black/20 text-white rounded hover:bg-black/30"
+    >
+      Clear Filter
+    </button>
+  </div>
+</Card>
+
 
       {/* Summary Cards */}
       {isLoading ? (
@@ -184,7 +236,7 @@ end.setHours(23, 59, 59, 999); // include the whole day
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {/* Total Income */}
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-green-100">Total Income</p>
@@ -199,7 +251,7 @@ end.setHours(23, 59, 59, 999); // include the whole day
           </Card>
 
           {/* Total Expenses */}
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-red-100">Total Expenses</p>
@@ -215,57 +267,34 @@ end.setHours(23, 59, 59, 999); // include the whole day
 
           {/* Net Profit */}
           <Card
-            className={`bg-gradient-to-br ${netProfit >= 0 ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600"} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            className={`bg-gradient-to-br ${netProfit >= 0 ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600"} text-white shadow-lg`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p
-                  className={
-                    netProfit >= 0 ? "text-blue-100" : "text-orange-100"
-                  }
-                >
-                  Net Profit
-                </p>
+                <p className={netProfit >= 0 ? "text-blue-100" : "text-orange-100"}>Net Profit</p>
                 <p className="text-3xl font-bold">
                   <AnimatedCounter value={netProfit} useCurrency />
                 </p>
               </div>
-              <div
-                className={`w-12 h-12 ${netProfit >= 0 ? "bg-blue-400/30" : "bg-orange-400/30"} rounded-full flex items-center justify-center`}
-              >
-                <DollarSign
-                  className={`w-6 h-6 ${netProfit >= 0 ? "text-blue-100" : "text-orange-100"}`}
-                />
+              <div className={`w-12 h-12 ${netProfit >= 0 ? "bg-blue-400/30" : "bg-orange-400/30"} rounded-full flex items-center justify-center`}>
+                <DollarSign className={`w-6 h-6 ${netProfit >= 0 ? "text-blue-100" : "text-orange-100"}`} />
               </div>
             </div>
           </Card>
 
           {/* Profit Margin */}
           <Card
-            className={`bg-gradient-to-br ${profitMargin >= 0 ? "from-purple-500 to-purple-600" : "from-gray-500 to-gray-600"} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            className={`bg-gradient-to-br ${profitMargin >= 0 ? "from-purple-500 to-purple-600" : "from-gray-500 to-gray-600"} text-white shadow-lg`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p
-                  className={
-                    profitMargin >= 0 ? "text-purple-100" : "text-gray-100"
-                  }
-                >
-                  Profit Margin
-                </p>
+                <p className={profitMargin >= 0 ? "text-purple-100" : "text-gray-100"}>Profit Margin</p>
                 <p className="text-3xl font-bold">
-                  <AnimatedCounter
-                    value={Math.round(profitMargin * 10) / 10}
-                    suffix="%"
-                  />
+                  <AnimatedCounter value={Math.round(profitMargin * 10) / 10} suffix="%" />
                 </p>
               </div>
-              <div
-                className={`w-12 h-12 ${profitMargin >= 0 ? "bg-purple-400/30" : "bg-gray-400/30"} rounded-full flex items-center justify-center`}
-              >
-                <TrendingUp
-                  className={`w-6 h-6 ${profitMargin >= 0 ? "text-purple-100" : "text-gray-100"}`}
-                />
+              <div className={`w-12 h-12 ${profitMargin >= 0 ? "bg-purple-400/30" : "bg-gray-400/30"} rounded-full flex items-center justify-center`}>
+                <TrendingUp className={`w-6 h-6 ${profitMargin >= 0 ? "text-purple-100" : "text-gray-100"}`} />
               </div>
             </div>
           </Card>
@@ -281,12 +310,9 @@ end.setHours(23, 59, 59, 999); // include the whole day
                 <Award className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Highest Income
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Highest Income</h3>
                 <p className="text-2xl font-bold text-green-600">
-                  $
-                  {parseFloat(highestIncome.amount.toString()).toLocaleString()}
+                  ${parseFloat(highestIncome.amount.toString()).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">{highestIncome.name}</p>
               </div>
@@ -299,14 +325,9 @@ end.setHours(23, 59, 59, 999); // include the whole day
                 <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Highest Expense
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Highest Expense</h3>
                 <p className="text-2xl font-bold text-red-600">
-                  $
-                  {parseFloat(
-                    highestExpense.amount.toString(),
-                  ).toLocaleString()}
+                  ${parseFloat(highestExpense.amount.toString()).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600">{highestExpense.name}</p>
               </div>
@@ -329,12 +350,7 @@ end.setHours(23, 59, 59, 999); // include the whole day
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip
-                    formatter={(value, name) => [
-                      `${Number(value).toLocaleString()}`,
-                      name.charAt(0).toUpperCase() + name.slice(1),
-                    ]}
-                  />
+                  <Tooltip formatter={(value, name) => [`${Number(value).toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]} />
                   <Bar dataKey="income" fill="#10B981" name="income" />
                   <Bar dataKey="expenses" fill="#EF4444" name="expenses" />
                 </BarChart>
@@ -353,22 +369,15 @@ end.setHours(23, 59, 59, 999); // include the whole day
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     dataKey="value"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    formatter={(value) => `${Number(value).toLocaleString()}`}
-                  />
+                  <Tooltip formatter={(value) => `${Number(value).toLocaleString()}`} />
                 </PieChart>
               </ResponsiveContainer>
             </Card>
@@ -384,16 +393,8 @@ end.setHours(23, 59, 59, 999); // include the whole day
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip
-                  formatter={(value) => `${Number(value).toLocaleString()}`}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="profit"
-                  stroke="#3B82F6"
-                  strokeWidth={3}
-                  dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
-                />
+                <Tooltip formatter={(value) => `${Number(value).toLocaleString()}`} />
+                <Line type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={3} dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </Card>

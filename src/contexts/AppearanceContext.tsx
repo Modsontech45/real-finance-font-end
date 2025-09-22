@@ -20,7 +20,7 @@ interface AppearanceContextType {
 }
 
 const AppearanceContext = createContext<AppearanceContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const useAppearance = () => {
@@ -42,7 +42,7 @@ export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
           theme: "dark",
           compactView: false,
           animationEffects: true,
-          currency: "USD",
+          currency: "XOF",
         };
   });
 
@@ -73,7 +73,7 @@ export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
     const updateDarkMode = () => {
       if (settings.theme === "auto") {
         const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
+          "(prefers-color-scheme: dark)"
         ).matches;
         setIsDarkMode(prefersDark);
       } else {

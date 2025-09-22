@@ -62,6 +62,7 @@ class TransactionService {
       amount: data.amount,
       type: data.type.trim().toLowerCase(), // "income" or "expense"
       comment: data.comment,
+      department: data.department,
       transactionDate: new Date(data.date).toISOString(), // ISO string
     };
 

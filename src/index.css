@@ -57,10 +57,10 @@
   transition-duration: 200ms;
 }
 
-:not(.animations-enabled) * {
+/* :not(.animations-enabled) * {
   transition: none !important;
   animation: none !important;
-}
+} */
 
 /* Light theme overrides */
 .light .bg-gradient-to-br {

@@ -43,7 +43,8 @@ const MembersPage: React.FC = () => {
   } = useForm<InviteFormData>({
     defaultValues: { role: UserRole.MEMBER },
   });
-
+4
+console.log("[MembersPage] members:", members);
   const onSubmit = async (data: InviteFormData) => {
     try {
       await inviteMember(data.email, [data.role]);
