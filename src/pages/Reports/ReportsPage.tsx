@@ -1,17 +1,7 @@
 import React, { useState, useMemo } from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  LineChart,
-  Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import { useTransactions } from "../../hooks/useTransactions";
 import Card from "../../components/UI/Card";
@@ -19,14 +9,7 @@ import Input from "../../components/UI/Input";
 import Select from "../../components/UI/Select";
 import LoadingSpinner from "../../components/UI/LoadingSpinner";
 import AnimatedCounter from "../../components/UI/AnimatedCounter";
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Calendar,
-  Award,
-  AlertTriangle,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Calendar, Award, AlertTriangle } from "lucide-react";
 
 const ReportsPage: React.FC = () => {
   const { transactions, isLoading } = useTransactions();
@@ -41,7 +24,7 @@ const ReportsPage: React.FC = () => {
 
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
 
-  // Helper: get valid date from transaction
+  // Helper to parse transaction date
   const getTransactionDate = (t: any) => {
     const dateValue = t.createdAt || t.date;
     if (!dateValue) return null;
@@ -53,17 +36,16 @@ const ReportsPage: React.FC = () => {
   const end = new Date(dateRange.endDate);
   end.setHours(23, 59, 59, 999);
 
-  // Filter transactions by date range AND department (case-insensitive)
+  // Filtered transactions by date and department
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const transactionDate = getTransactionDate(t);
       if (!transactionDate) return false;
 
       const withinDate = transactionDate >= start && transactionDate <= end;
-    const matchesDept = selectedDepartment
-  ? t.department?.trim().toLowerCase() === selectedDepartment.toLowerCase()
-  : true;
-console.log("Filtering transaction department:", t, "withinDate:", withinDate, "matchesDept:", matchesDept);
+      const matchesDept = selectedDepartment
+        ? t.department?.trim().toLowerCase() === selectedDepartment.toLowerCase()
+        : true;
 
       return withinDate && matchesDept;
     });
@@ -116,46 +98,34 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
     }));
   }, [transactions]);
 
-  // Year range
+  // Year for charts
   const years = Array.from(
     new Set(
       filteredTransactions
-        .map((t) => {
-          const d = getTransactionDate(t);
-          return d ? d.getFullYear() : null;
-        })
-        .filter((y) => y !== null),
-    ),
+        .map((t) => getTransactionDate(t)?.getFullYear())
+        .filter((y) => y !== undefined && y !== null)
+    )
   );
-  const currentYear =
-    years.length > 0 ? Math.max(...years) : new Date().getFullYear();
+  const currentYear = years.length ? Math.max(...years) : new Date().getFullYear();
 
   // Monthly data
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
-    const month = new Date(currentYear, i, 1).toLocaleString("default", {
-      month: "short",
-    });
-
-    const monthlyTransactions = filteredTransactions.filter((t) => {
+    const month = new Date(currentYear, i, 1).toLocaleString("default", { month: "short" });
+    const monthTransactions = filteredTransactions.filter((t) => {
       const d = getTransactionDate(t);
       return d && d.getMonth() === i && d.getFullYear() === currentYear;
     });
-
-    const income = monthlyTransactions
-      .filter((t) => t.type === "income")
+    const income = monthTransactions.filter(t => t.type === "income")
       .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
-
-    const expenses = monthlyTransactions
-      .filter((t) => t.type === "expense")
+    const expenses = monthTransactions.filter(t => t.type === "expense")
       .reduce((sum, t) => sum + parseFloat(t.amount.toString()), 0);
-
     return { month, income, expenses, profit: income - expenses };
   });
 
   const pieData = [
     { name: "Income", value: totalIncome, color: "#10B981" },
     { name: "Expenses", value: totalExpenses, color: "#EF4444" },
-  ].filter((item) => item.value > 0);
+  ].filter(d => d.value > 0);
 
   const COLORS = ["#10B981", "#EF4444"];
 
@@ -170,62 +140,48 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
       </div>
 
       {/* Filters */}
-     <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-gray-500 text-black flex flex-wrap items-center gap-4 p-4">
-  {/* Date Range Inputs */}
-  <div className="flex items-center space-x-4">
-    <Calendar className="w-5 h-5 text-black" />
-    <Input
-      label="Start Date"
-      type="date"
-      value={dateRange.startDate}
-      onChange={(e) =>
-        setDateRange((prev) => ({ ...prev, startDate: e.target.value }))
-      }
-    />
-    <Input
-      label="End Date"
-      type="date"
-      value={dateRange.endDate}
-      onChange={(e) =>
-        setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
-      }
-    />
-  </div>
-
-  {/* Department Filter */}
-  <div className="flex items-center space-x-2">
-    <Select
-      options={[{ value: "", label: "All Departments" }, ...departmentOptions]}
-      value={
-        selectedDepartment
-          ? {
-              value: selectedDepartment,
-              label:
-                selectedDepartment.charAt(0).toUpperCase() +
-                selectedDepartment.slice(1),
+      <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-gray-500 text-black flex flex-wrap items-center gap-4 p-4">
+        <div className="flex items-center space-x-1">
+       
+          <Input
+            label="Start"
+            type="date"
+            value={dateRange.startDate}
+            onChange={(e) =>
+              setDateRange(prev => ({ ...prev, startDate: e.target.value }))
             }
-          : { value: "", label: "All Departments" }
-      }
-      onChange={(option) => {
-        if (!option || option.value === "") {
-          setSelectedDepartment(null);
-        } else {
-          setSelectedDepartment(option.value);
-        }
-      }}
-      placeholder="Filter by department"
-      className="w-48"
-    />
+          />
+          <Input
+            label="End "
+            type="date"
+            value={dateRange.endDate}
+            onChange={(e) =>
+              setDateRange(prev => ({ ...prev, endDate: e.target.value }))
+            }
+          />
+        </div>
 
-    <button
-      onClick={() => setSelectedDepartment(null)}
-      className="px-3 py-1 bg-black/20 text-white rounded hover:bg-black/30"
-    >
-      Clear Filter
-    </button>
-  </div>
-</Card>
+        <div className="flex items-center space-x-2">
+          <Select
+            options={[{ value: "", label: "All Departments" }, ...departmentOptions]}
+            value={
+              selectedDepartment
+                ? { value: selectedDepartment, label: selectedDepartment.charAt(0).toUpperCase() + selectedDepartment.slice(1) }
+                : { value: "", label: "All Departments" }
+            }
+            onChange={(option) => setSelectedDepartment(option?.value || null)}
+            placeholder="Filter by department"
+            className="w-48"
+          />
 
+          <button
+            onClick={() => setSelectedDepartment(null)}
+            className="px-3 py-1 bg-black/20 text-white rounded hover:bg-black/30"
+          >
+            Clear Filter
+          </button>
+        </div>
+      </Card>
 
       {/* Summary Cards */}
       {isLoading ? (
@@ -235,7 +191,6 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Total Income */}
           <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
@@ -250,7 +205,6 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
             </div>
           </Card>
 
-          {/* Total Expenses */}
           <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg">
             <div className="flex items-center justify-between">
               <div>
@@ -265,10 +219,7 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
             </div>
           </Card>
 
-          {/* Net Profit */}
-          <Card
-            className={`bg-gradient-to-br ${netProfit >= 0 ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600"} text-white shadow-lg`}
-          >
+          <Card className={`bg-gradient-to-br ${netProfit >= 0 ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600"} text-white shadow-lg`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className={netProfit >= 0 ? "text-blue-100" : "text-orange-100"}>Net Profit</p>
@@ -282,10 +233,7 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
             </div>
           </Card>
 
-          {/* Profit Margin */}
-          <Card
-            className={`bg-gradient-to-br ${profitMargin >= 0 ? "from-purple-500 to-purple-600" : "from-gray-500 to-gray-600"} text-white shadow-lg`}
-          >
+          <Card className={`bg-gradient-to-br ${profitMargin >= 0 ? "from-purple-500 to-purple-600" : "from-gray-500 to-gray-600"} text-white shadow-lg`}>
             <div className="flex items-center justify-between">
               <div>
                 <p className={profitMargin >= 0 ? "text-purple-100" : "text-gray-100"}>Profit Margin</p>
@@ -301,89 +249,25 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
         </div>
       )}
 
-      {/* Highlights */}
-      {!isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-green-50">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-                <Award className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Highest Income</h3>
-                <p className="text-2xl font-bold text-green-600">
-                  ${parseFloat(highestIncome.amount.toString()).toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600">{highestIncome.name}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-red-50">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Highest Expense</h3>
-                <p className="text-2xl font-bold text-red-600">
-                  ${parseFloat(highestExpense.amount.toString()).toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-600">{highestExpense.name}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
-
       {/* Charts */}
       {!isLoading && (
-        <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Monthly Bar Chart */}
-            <Card className="shadow-lg border-0 bg-black">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Monthly Income vs Expenses ({currentYear})
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value, name) => [`${Number(value).toLocaleString()}`, name.charAt(0).toUpperCase() + name.slice(1)]} />
-                  <Bar dataKey="income" fill="#10B981" name="income" />
-                  <Bar dataKey="expenses" fill="#EF4444" name="expenses" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="shadow-lg border-0 bg-black">
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Monthly Income vs Expenses ({currentYear})
+            </h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => value.toLocaleString()} />
+                <Bar dataKey="income" fill="#10B981" name="Income" />
+                <Bar dataKey="expenses" fill="#EF4444" name="Expenses" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
 
-            {/* Pie Chart */}
-            <Card className="shadow-lg border-0 backdrop:blur-sm bg-black">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                Income vs Expenses Distribution
-              </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${Number(value).toLocaleString()}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-          </div>
-
-          {/* Profit Trend Line Chart */}
           <Card className="shadow-lg border-0 bg-black">
             <h3 className="text-lg font-semibold text-white mb-4">
               Profit Trend ({currentYear})
@@ -393,12 +277,12 @@ console.log("Filtering transaction department:", t, "withinDate:", withinDate, "
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip formatter={(value) => `${Number(value).toLocaleString()}`} />
-                <Line type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={3} dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }} />
+                <Tooltip formatter={(value) => value.toLocaleString()} />
+                <Line type="monotone" dataKey="profit" stroke="#3B82F6" strokeWidth={3} dot={{ fill: "#3B82F6", r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </Card>
-        </>
+        </div>
       )}
     </div>
   );
