@@ -30,19 +30,21 @@ const LoginPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: LoginData, event?: React.FormEvent) => {
-    event?.preventDefault(); // ensure default is prevented
+  const onSubmit = async (data: LoginData) => {
     setIsSubmitting(true);
     try {
-      await login(data.email, data.password);
-      toast.success("Welcome back!");
-      navigate("/app/dashboard");
-    } catch (error) {
-      toast.error("Invalid email or password");
+      const response = await login(data.email, data.password);
+      if (response.user && response.token) {
+        toast.success("Welcome back!");
+        navigate("/app/dashboard");
+      } else {
+        toast.error("Login failed: invalid response");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Invalid email or password");
     } finally {
       setIsSubmitting(false);
     }
-
   };
 
   return (

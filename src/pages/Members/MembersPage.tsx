@@ -27,12 +27,9 @@ interface InviteFormData {
 
 const MembersPage: React.FC = () => {
   const { user } = useAuth();
-  const userRoles = React.useMemo(() => user?.roles, [user?.roles]);
   const isAdmin = React.useMemo(
-    () =>
-      userRoles === "super_admin" ||
-      (Array.isArray(userRoles) && userRoles.includes("super_admin")),
-    [userRoles]
+    () => user?.roles?.includes(UserRole.SUPER_ADMIN),
+    [user?.roles],
   );
   const [showInviteForm, setShowInviteForm] = useState(false);
   const { members, isLoading, isInviting, inviteMember, removeMember } =
@@ -58,20 +55,20 @@ const MembersPage: React.FC = () => {
   };
 
   const handleRemoveMember = removeMember;
-  const memberRoles = members.map((m) => m.roles.map((r) => r)).flat();
+
   const adminCount = members.filter((m) =>
-    m.roles.some((r) => r === "super_admin")
+    m.roles.some((r) => r === UserRole.SUPER_ADMIN),
   ).length;
 
   const viewerCount = members.filter((m) =>
-    m.roles.some((r) => r === "member" || r === "manager")
+    m.roles.some((r) => r === UserRole.MEMBER || r === UserRole.MANAGER),
   ).length;
 
   console.log(
     "[MembersPage] Admin Count:",
     adminCount,
     "Viewer Count:",
-    viewerCount
+    viewerCount,
   );
 
   return (
@@ -131,7 +128,7 @@ const MembersPage: React.FC = () => {
         <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100">Viewers</p>
+              <p className="text-green-100">Members</p>
               <p className="text-2xl lg:text-3xl font-bold">
                 <AnimatedCounter value={viewerCount} />
               </p>
@@ -176,23 +173,19 @@ const MembersPage: React.FC = () => {
               />
 
               <div>
-                <label className="block text-sm font-medium text-black mb-1"></label>
+                <label className="block text-sm font-medium text-black mb-1">
+                  Role
+                </label>
                 <select
                   {...register("role")}
                   className="block w-full capitalize rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm text-black p-2"
-                  // defaultValue="viewer"
                 >
                   {Object.values(UserRole).map((role) =>
                     role !== UserRole.SUPER_ADMIN ? (
-                      <option
-                        key={role}
-                        value={role}
-                        selected={role == UserRole.MEMBER}
-                        className="capitalize"
-                      >
-                        {role}
+                      <option key={role} value={role} className="capitalize">
+                        {role.replace("_", " ")}
                       </option>
-                    ) : null
+                    ) : null,
                   )}
                 </select>
                 <p className="mt-1 text-sm text-white">
@@ -238,9 +231,7 @@ const MembersPage: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {members.map((member) => {
-              const adminUser = member.roles
-                .map((r) => r)
-                .includes(UserRole.SUPER_ADMIN);
+              const isAdminUser = member.roles.includes(UserRole.SUPER_ADMIN);
               return (
                 <div
                   key={member.id}
@@ -252,10 +243,10 @@ const MembersPage: React.FC = () => {
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-base lg:text-lg font-medium text-white">
-                          {member.username}
+                        <h3 className="text-base lg:text-lg font-medium text-black">
+                          {member.fullName}
                         </h3>
-                        {member.roles.includes(UserRole.SUPER_ADMIN) && (
+                        {isAdminUser && (
                           <Crown className="w-4 h-4 text-yellow-500" />
                         )}
                       </div>
@@ -272,7 +263,9 @@ const MembersPage: React.FC = () => {
                           <Calendar className="w-4 h-4 text-emerald-700" />
                           <span>
                             Joined{" "}
-                            {new Date(member.createdAt).toLocaleDateString()}
+                            {new Date(
+                              member.created_at || "",
+                            ).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
@@ -283,16 +276,18 @@ const MembersPage: React.FC = () => {
                     <div className="flex items-center space-x-2 lg:space-x-3">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          adminUser
+                          isAdminUser
                             ? "bg-purple-100 text-purple-800"
-                            : "bg-green-100 text-green-800"
+                            : member.roles.includes(UserRole.MANAGER)
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {adminUser
+                        {isAdminUser
                           ? "Admin"
                           : member.roles.includes(UserRole.MANAGER)
-                          ? "Manager"
-                          : "Viewer"}
+                            ? "Manager"
+                            : "Member"}
                       </span>
 
                       <span
@@ -306,7 +301,7 @@ const MembersPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {!adminUser && (
+                    {!isAdminUser && (
                       <button
                         onClick={() => handleRemoveMember(member.id)}
                         className="text-red-600 hover:text-red-900 transition-colors duration-200 p-1 rounded hover:bg-red-50"

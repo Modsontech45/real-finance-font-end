@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import { AuthProvider } from "./contexts/AuthContext";
@@ -52,8 +57,14 @@ function App() {
                 <Route path="/" element={<FinanceLandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
-                <Route path="/email-verification" element={<EmailVerificationPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route
+                  path="/email-verification"
+                  element={<EmailVerificationPage />}
+                />
+                <Route
+                  path="/forgot-password"
+                  element={<ForgotPasswordPage />}
+                />
                 <Route path="/verify-email" element={<EmailVerification />} />
 
                 {/* Protected Routes */}
@@ -65,7 +76,10 @@ function App() {
                     </ProtectedRoute>
                   }
                 >
-                  <Route index element={<Navigate to="/app/dashboard" replace />} />
+                  <Route
+                    index
+                    element={<Navigate to="/app/dashboard" replace />}
+                  />
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="reports" element={<ReportsPage />} />
                   <Route path="notice-board" element={<NoticeBoardPage />} />

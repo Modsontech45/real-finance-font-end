@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { TransactionFormData } from "../../types";
+import { TransactionFormData, UserRole } from "../../types";
 import { useTransactions } from "../../hooks/useTransactions";
 import Button from "../../components/UI/Button";
 import Input from "../../components/UI/Input";
@@ -19,7 +18,6 @@ import {
   Calendar,
   MessageSquare,
   Trash2,
-  RefreshCw,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -36,24 +34,22 @@ const schema = yup.object({
 
 const DashboardPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [deletableTransactions, setDeletableTransactions] = useState<
-    Set<string>
-  >(new Set());
+
   const {
     transactions,
     isLoading,
     isCreating,
     createTransaction,
     deleteTransaction,
+    refetch, // ✅ make sure your hook exposes this
   } = useTransactions();
+
   const { user } = useAuth();
-  const userRoles = React.useMemo(() => user?.roles, [user?.roles]);
   const isAdmin = React.useMemo(
-    () =>
-      userRoles === "super_admin" ||
-      (Array.isArray(userRoles) && userRoles.includes("super_admin")),
-    [userRoles]
+    () => user?.roles?.includes(UserRole.SUPER_ADMIN),
+    [user?.roles]
   );
+
   const {
     register,
     handleSubmit,
@@ -69,69 +65,25 @@ const DashboardPage: React.FC = () => {
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
-      console.log(data);
-      const newTransaction = await createTransaction(data);
-
-      // Add transaction to deletable set
-      console.log(newTransaction);
-      setDeletableTransactions((prev) => new Set(prev).add(newTransaction.id));
-
-      // Remove delete button after 5 minutes
-      setTimeout(() => {
-        setDeletableTransactions((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(newTransaction.id);
-          return newSet;
-        });
-      }, 5 * 60 * 1000); // 5 minutes
-
+      await createTransaction(data);
+      await  refetch(); // ✅ refresh list after creation
       reset();
       setShowForm(false);
     } catch (error) {
-      // Error is handled in the hook
+      // handled by hook
     }
   };
 
-  // Initialize deletable transactions on component mount
-  useEffect(() => {
-    const now = new Date().getTime();
-    const fiveMinutesAgo = now - 5 * 60 * 1000;
+  const handleDeleteTransaction = async (id: string) => {
+    await deleteTransaction(id);
+    await  refetch(); // ✅ refresh after delete
+  };
 
-    const recentTransactions = transactions.filter((transaction) => {
-      const transactionTime = new Date(transaction.createdAt).getTime();
-      return transactionTime > fiveMinutesAgo;
-    });
-
-    const deletableIds = new Set(recentTransactions.map((t) => t.id));
-    setDeletableTransactions(deletableIds);
-
-    // Set timeouts for existing recent transactions
-    recentTransactions.forEach((transaction) => {
-      const transactionTime = new Date(transaction.createdAt).getTime();
-      const timeRemaining = 5 * 60 * 1000 - (now - transactionTime);
-
-      if (timeRemaining > 0) {
-        setTimeout(() => {
-          setDeletableTransactions((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(transaction.id);
-            return newSet;
-          });
-        }, timeRemaining);
-      }
-    });
-  }, [transactions]);
-
-  const handleDeleteTransaction = deleteTransaction;
-  console.log(transactions);
   const { totalIncome, totalExpenses } = transactions.reduce(
     (acc, t) => {
-      const amount = Number(t.amount) || 0; // ensure numeric
-      if (t.type === "income") {
-        acc.totalIncome += amount;
-      } else if (t.type === "expense") {
-        acc.totalExpenses += amount;
-      }
+      const amount = Number(t.amount) || 0;
+      if (t.type === "income") acc.totalIncome += amount;
+      else if (t.type === "expense") acc.totalExpenses += amount;
       return acc;
     },
     { totalIncome: 0, totalExpenses: 0 }
@@ -143,18 +95,18 @@ const DashboardPage: React.FC = () => {
     { value: "income", label: "Income" },
     { value: "expense", label: "Expense" },
   ];
+
   return (
     <div className="p-4 lg:p-6 space-y-4 lg:space-y-6 text-white pt-16 lg:pt-6">
-      {/* Header with gradient background */}
-      <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-4 lg:p-8 text-white border border-white/20">
-        <div>
-          <h1 className="text-2xl lg:text-4xl font-bold mb-2">
-            Financial Dashboard
-          </h1>
-          <p className="text-white/80 text-sm lg:text-lg">
-            Track your income and expenses with real-time
-          </p>
-        </div>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-sm rounded-2xl p-4 lg:p-8 border border-white/20">
+        <h1 className="text-2xl lg:text-4xl font-bold mb-2">
+          Financial Dashboard
+        </h1>
+        <p className="text-white/80 text-sm lg:text-lg">
+          Track your income and expenses in real-time
+        </p>
+
         {isAdmin && (
           <div className="flex items-center space-x-3 mt-4 lg:mt-0">
             <Button
@@ -171,7 +123,7 @@ const DashboardPage: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100">Total Income</p>
@@ -179,13 +131,13 @@ const DashboardPage: React.FC = () => {
                 <AnimatedCounter value={totalIncome} useCurrency />
               </p>
             </div>
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-400/30 rounded-full flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 lg:w-6 lg:h-6 text-green-100" />
+            <div className="w-12 h-12 bg-green-400/30 rounded-full flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-green-100" />
             </div>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-red-100">Total Expenses</p>
@@ -193,8 +145,8 @@ const DashboardPage: React.FC = () => {
                 <AnimatedCounter value={totalExpenses} useCurrency />
               </p>
             </div>
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-red-400/30 rounded-full flex items-center justify-center">
-              <TrendingDown className="w-5 h-5 lg:w-6 lg:h-6 text-red-100" />
+            <div className="w-12 h-12 bg-red-400/30 rounded-full flex items-center justify-center">
+              <TrendingDown className="w-6 h-6 text-red-100" />
             </div>
           </div>
         </Card>
@@ -204,26 +156,22 @@ const DashboardPage: React.FC = () => {
             netProfit >= 0
               ? "from-blue-500 to-blue-600"
               : "from-orange-500 to-orange-600"
-          } text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+          } text-white shadow-lg hover:-translate-y-1 transition`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p
-                className={netProfit >= 0 ? "text-blue-100" : "text-orange-100"}
-              >
-                Net Profit
-              </p>
+              <p>{netProfit >= 0 ? "Net Profit" : "Net Loss"}</p>
               <p className="text-xl lg:text-3xl font-bold">
                 <AnimatedCounter value={netProfit} useCurrency />
               </p>
             </div>
             <div
-              className={`w-10 h-10 lg:w-12 lg:h-12 ${
+              className={`w-12 h-12 ${
                 netProfit >= 0 ? "bg-blue-400/30" : "bg-orange-400/30"
               } rounded-full flex items-center justify-center`}
             >
               <DollarSign
-                className={`w-5 h-5 lg:w-6 lg:h-6 ${
+                className={`w-6 h-6 ${
                   netProfit >= 0 ? "text-blue-100" : "text-orange-100"
                 }`}
               />
@@ -231,7 +179,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:-translate-y-1 transition">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100">Transactions</p>
@@ -239,8 +187,8 @@ const DashboardPage: React.FC = () => {
                 <AnimatedCounter value={transactions.length} />
               </p>
             </div>
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-purple-400/30 rounded-full flex items-center justify-center">
-              <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-purple-100" />
+            <div className="w-12 h-12 bg-purple-400/30 rounded-full flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-purple-100" />
             </div>
           </div>
         </Card>
@@ -249,19 +197,6 @@ const DashboardPage: React.FC = () => {
       {/* Add Transaction Form */}
       {showForm && (
         <Card className="shadow-lg border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl lg:text-2xl font-bold text-white">
-              Add New Transaction
-            </h2>
-            <Button
-              onClick={() => setShowForm(false)}
-              variant="secondary"
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"
@@ -272,14 +207,12 @@ const DashboardPage: React.FC = () => {
               {...register("date")}
               error={errors.date?.message}
             />
-
             <Input
               label="Name"
               {...register("name")}
               error={errors.name?.message}
               placeholder="Transaction name"
             />
-
             <Input
               label="Amount"
               type="number"
@@ -288,23 +221,20 @@ const DashboardPage: React.FC = () => {
               error={errors.amount?.message}
               placeholder="0.00"
             />
-
             <Select
               label="Type"
               {...register("type")}
               error={errors.type?.message}
               options={typeOptions}
             />
-
             <div className="lg:col-span-2">
               <Input
                 label="Comment"
                 {...register("comment")}
                 error={errors.comment?.message}
-                placeholder="Add a comment about this transaction"
+                placeholder="Add a comment"
               />
             </div>
-
             <div className="lg:col-span-2 flex justify-end">
               <Button
                 type="submit"
@@ -322,15 +252,11 @@ const DashboardPage: React.FC = () => {
       {/* Transactions Table */}
       <Card className="shadow-lg border border-white/20 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl lg:text-2xl font-bold text-white">
-            Recent Transactions
-          </h2>
-          <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-white/60" />
-            <span className="text-xs lg:text-sm text-white/80">
-              Last 30 days
-            </span>
-          </div>
+          <h2 className="text-xl lg:text-2xl font-bold">Recent Transactions</h2>
+          <span className="text-xs lg:text-sm text-white/80 flex items-center">
+            <Calendar className="w-4 h-4 mr-1 text-white/60" />
+            Last 30 days
+          </span>
         </div>
 
         {isLoading ? (
@@ -343,104 +269,83 @@ const DashboardPage: React.FC = () => {
             <table className="min-w-full divide-y divide-white/20 text-sm lg:text-base">
               <thead className="bg-black/20">
                 <tr>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase">
                     Date
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase">
                     Name
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase">
                     Amount
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider hidden sm:table-cell">
+                  <th className="px-3 lg:px-6 py-3 hidden md:table-cell text-left text-xs font-medium text-white/70 uppercase">
+                    Department
+                  </th>
+                  <th className="px-3 lg:px-6 py-3 hidden sm:table-cell text-left text-xs font-medium text-white/70 uppercase">
                     Type
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider hidden md:table-cell">
+                  <th className="px-3 lg:px-6 py-3 hidden md:table-cell text-left text-xs font-medium text-white/70 uppercase">
                     Comment
                   </th>
-                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
+                  <th className="px-3 lg:px-6 py-3 text-left text-xs font-medium text-white/70 uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-transparent divide-y divide-white/10">
-                {transactions.map((transaction) => (
+              <tbody className="divide-y divide-white/10">
+                {transactions.map((t) => (
                   <tr
-                    key={transaction.id}
+                    key={t.id}
                     className="hover:bg-white/5 transition-colors duration-200"
                   >
-                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-xs lg:text-sm text-white">
-                      <div className="lg:hidden">
-                        {new Date(
-                          transaction.date || transaction.transactionDate
-                        ).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </div>
-                      <div className="hidden lg:block">
-                        {new Date(
-                          transaction.date || transaction.transactionDate
-                        ).toLocaleDateString()}
-                      </div>
+                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm">
+                      {new Date(t.transactionDate).toLocaleDateString()}
                     </td>
-                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm font-medium text-white">
-                      <div className="truncate max-w-[120px] lg:max-w-none">
-                        {transaction.name}
-                      </div>
-                      <div className="sm:hidden text-xs text-white/60 mt-1">
-                        <span
-                          className={`inline-flex px-1 py-0.5 text-xs font-semibold rounded ${
-                            transaction.type === "income"
-                              ? "bg-green-500/20 text-green-300"
-                              : "bg-red-500/20 text-red-300"
-                          }`}
-                        >
-                          {transaction.type}
-                        </span>
-                      </div>
+                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm font-medium">
+                      {t.name}
                     </td>
-                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-xs lg:text-sm text-white">
+                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm">
                       <span
                         className={`font-semibold ${
-                          transaction.type === "income"
+                          t.type === "income"
                             ? "text-green-400"
                             : "text-red-400"
                         }`}
                       >
-                        ${transaction.amount.toLocaleString()}
+                        ${Number(t.amount ?? 0).toLocaleString()}
                       </span>
                     </td>
-                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                    <td className="px-3 lg:px-6 py-4 hidden md:table-cell text-xs lg:text-sm text-white/80">
+                      {t.department}
+                    </td>
+                    <td className="px-3 lg:px-6 py-4 hidden sm:table-cell">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          transaction.type === "income"
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          t.type === "income"
                             ? "bg-green-500/20 text-green-300"
                             : "bg-red-500/20 text-red-300"
                         }`}
                       >
-                        {transaction.type}
+                        {t.type}
                       </span>
                     </td>
-                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm text-white/80 max-w-xs truncate hidden md:table-cell">
+                    <td className="px-3 lg:px-6 py-4 hidden md:table-cell text-xs lg:text-sm">
                       <div className="flex items-center space-x-1">
                         <MessageSquare className="w-4 h-4 text-white/60" />
-                        <span>{transaction.comment}</span>
+                        <span>{t.comment}</span>
                       </div>
                     </td>
-                    <td className="px-3 lg:px-6 py-4 whitespace-nowrap text-xs lg:text-sm text-white">
-                      {deletableTransactions.has(transaction.id) ? (
+                    <td className="px-3 lg:px-6 py-4 text-xs lg:text-sm">
+                      {t.isLocked ? (
+                        <span className="text-white/30 text-xs">Locked</span>
+                      ) : (
                         <button
-                          onClick={() =>
-                            handleDeleteTransaction(transaction.id)
-                          }
-                          className="text-red-400 hover:text-red-300 transition-colors duration-200 p-1 rounded hover:bg-red-500/20"
-                          title="Delete transaction (available for 5 minutes)"
+                          onClick={() => handleDeleteTransaction(t.id)}
+                          className="text-red-400 hover:text-red-300 transition-colors p-1 rounded hover:bg-red-500/20"
+                          title="Delete transaction"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                      ) : (
-                        <span className="text-white/30 text-xs">Locked</span>
                       )}
                     </td>
                   </tr>
@@ -453,9 +358,7 @@ const DashboardPage: React.FC = () => {
                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Calendar className="w-8 h-8 text-white/60" />
                 </div>
-                <h3 className="text-lg font-medium text-white">
-                  No transactions yet
-                </h3>
+                <h3 className="text-lg font-medium">No transactions yet</h3>
                 <p className="text-white/80">
                   Add your first transaction to get started
                 </p>

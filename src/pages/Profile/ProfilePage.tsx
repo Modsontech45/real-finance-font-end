@@ -11,6 +11,7 @@ import Card from "../../components/UI/Card";
 import toast from "react-hot-toast";
 import { User, Settings, Save } from "lucide-react";
 import { userService } from "../../services/userService";
+import { UserRole } from "../../types";
 
 const schema = yup.object({
   firstName: yup
@@ -50,7 +51,7 @@ const ProfilePage: React.FC = () => {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       email: user?.email || "",
-      companyName: user?.company_name || "",
+      companyName: user?.company?.name || "",
       country: user?.country || "",
       phoneNumber: user?.phoneNumber || "",
     },
@@ -58,9 +59,7 @@ const ProfilePage: React.FC = () => {
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      // Simulate API call
       await userService.updateProfile(data);
-
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (error) {
@@ -99,32 +98,34 @@ const ProfilePage: React.FC = () => {
             <p className="text-white/80">{user?.email}</p>
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-white/70">role:</span>
+                <span className="text-white/70">Role:</span>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user?.role === "admin"
+                    user?.roles?.includes(UserRole.SUPER_ADMIN)
                       ? "bg-purple-500/20 text-purple-300"
                       : "bg-green-500/20 text-green-300"
                   }`}
                 >
-                  {user?.role}
+                  {user?.roles?.includes(UserRole.SUPER_ADMIN)
+                    ? "Super Admin"
+                    : user?.roles?.[0]?.replace("_", " ")}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/70">Status:</span>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    user?.is_verified
+                    user?.isEmailVerified
                       ? "bg-green-500/20 text-green-300"
                       : "bg-yellow-500/20 text-yellow-300"
                   }`}
                 >
-                  {user?.is_verified ? "Verified" : "Pending"}
+                  {user?.isEmailVerified ? "Verified" : "Pending"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/70">Company:</span>
-                <span className="text-white">{user?.company_name}</span>
+                <span className="text-white">{user?.company?.name}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-white/70">Country:</span>
@@ -184,14 +185,14 @@ const ProfilePage: React.FC = () => {
                       {user?.email}
                     </p>
                   </div>
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-2">
-                    Phone Number
-                  </label>
-                  <p className="text-white bg-white/5 px-4 py-3 rounded-xl border border-white/20">
-                    {user?.phoneNumber}
-                  </p>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/80 mb-2">
+                      Phone Number
+                    </label>
+                    <p className="text-white bg-white/5 px-4 py-3 rounded-xl border border-white/20">
+                      {user?.phoneNumber}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -205,13 +206,12 @@ const ProfilePage: React.FC = () => {
                     placeholder="Enter your first name"
                   />
 
- <Input
+                  <Input
                     label="Last Name"
                     {...register("lastName")}
                     error={errors.lastName?.message}
                     placeholder="Enter your last name"
                   />
-
 
                   <Input
                     label="Email Address"
@@ -268,7 +268,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-yellow-200">
-                        role Restrictions
+                        Role Restrictions
                       </h3>
                       <div className="mt-2 text-sm text-yellow-100">
                         <p>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { getAdminData } from "../../utils/sessionUtils";
+import { useAuth } from "../../contexts/AuthContext";
 import { useAppearance } from "../../contexts/AppearanceContext";
 import { currencies } from "../../utils/currencies";
 import Button from "../../components/UI/Button";
@@ -19,6 +19,7 @@ import {
   Save,
   AlertTriangle,
 } from "lucide-react";
+import { UserRole } from "../../types";
 
 interface NotificationSettings {
   emailNotifications: boolean;
@@ -34,7 +35,7 @@ interface SecuritySettings {
 }
 
 const SettingsPage: React.FC = () => {
-  const adminData = getAdminData(); // Retrieve stored admin object
+  const { user } = useAuth();
 
   const {
     settings,
@@ -54,7 +55,7 @@ const SettingsPage: React.FC = () => {
   });
 
   // Restrict access if not super_admin
-  if (!adminData?.roles?.includes("super_admin")) {
+  if (!user?.roles?.includes(UserRole.SUPER_ADMIN)) {
     return (
       <div className="p-4 text-red-600 font-semibold">
         Access denied. You must be a super admin to view this page.
@@ -104,18 +105,18 @@ const SettingsPage: React.FC = () => {
 
   const handleExportData = () => {
     toast.success(
-      "Data export initiated. You will receive an email when ready."
+      "Data export initiated. You will receive an email when ready.",
     );
   };
 
   const handleDeleteAccount = () => {
     if (
       window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
+        "Are you sure you want to delete your account? This action cannot be undone.",
       )
     ) {
       toast.error(
-        "Account deletion requested. Please check your email for confirmation."
+        "Account deletion requested. Please check your email for confirmation.",
       );
     }
   };
@@ -178,13 +179,13 @@ const SettingsPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input
                       label="Company Name"
-                      value={adminData?.companyName || ""}
+                      value={user?.company?.name || ""}
                       disabled
                       helpText="Contact support to change company name"
                     />
                     <Input
                       label="Country"
-                      value={adminData?.country || ""}
+                      value={user?.country || ""}
                       disabled
                       helpText="Country cannot be changed after registration"
                     />
@@ -314,10 +315,12 @@ const SettingsPage: React.FC = () => {
                         <h4 className="text-sm font-medium text-yellow-200">
                           Enhanced Security Available
                         </h4>
-                        <p className="mt-1 text-sm text-yellow-100">
-                          Enable two-factor authentication for additional
-                          account security.
-                        </p>
+                        <div className="mt-2 text-sm text-yellow-100">
+                          <p>
+                            Enable two-factor authentication for additional
+                            account security.
+                          </p>
+                        </div>
                         <Button variant="secondary" size="sm" className="mt-3">
                           Enable 2FA
                         </Button>
@@ -376,7 +379,7 @@ const SettingsPage: React.FC = () => {
                         checked={value}
                         onChange={() =>
                           handleNotificationChange(
-                            key as keyof NotificationSettings
+                            key as keyof NotificationSettings,
                           )
                         }
                         className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-white/30 bg-white/10 rounded"

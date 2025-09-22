@@ -1,24 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import {
-  Shield,
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Mail,
-  ArrowRight,
-} from "lucide-react";
-import { apiClient } from "../../services/api";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Shield, CheckCircle, XCircle, Loader2, Mail, ArrowRight } from "lucide-react";
 
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "https://finance-backendsynctuario.onrender.com/api"; // change to production URL if needed
 
 const EmailVerification: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading"
-  );
+
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -30,9 +21,8 @@ const EmailVerification: React.FC = () => {
       }
 
       try {
-        console.log(token);
-        const data = await apiClient.get(`/auth/verify-email?token=${token}`);
-        // const data = await response.json();
+        const response = await fetch(`${API_BASE}/auth/verify-email?token=${token}`);
+        const data = await response.json();
 
         if (response.ok) {
           setStatus("success");
@@ -51,13 +41,11 @@ const EmailVerification: React.FC = () => {
     verifyEmail();
   }, [token]);
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
+  const handleLogin = () => navigate("/login");
 
   return (
     <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen relative overflow-hidden">
-      {/* Subtle SVG pattern background */}
+      {/* Background */}
       <div className="absolute inset-0 opacity-20">
         <div
           className="absolute inset-0"
@@ -69,15 +57,13 @@ const EmailVerification: React.FC = () => {
 
       {/* Header */}
       <header className="relative z-20 bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              Synctuario
-            </span>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+            <Shield className="w-6 h-6 text-white" />
           </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+            Synctuario
+          </span>
         </div>
       </header>
 
@@ -98,18 +84,14 @@ const EmailVerification: React.FC = () => {
               {status === "loading" && (
                 <>
                   <Loader2 className="w-12 h-12 text-green-400 animate-spin mx-auto" />
-                  <p className="text-green-300 text-lg">
-                    Verifying your email...
-                  </p>
+                  <p className="text-green-300 text-lg">Verifying your email...</p>
                 </>
               )}
 
               {status === "success" && (
                 <>
                   <CheckCircle className="w-16 h-16 text-green-400 mx-auto" />
-                  <p className="text-green-300 text-lg font-semibold">
-                    ✅ {message}
-                  </p>
+                  <p className="text-green-300 text-lg font-semibold">✅ {message}</p>
                   <button
                     onClick={handleLogin}
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
@@ -123,9 +105,7 @@ const EmailVerification: React.FC = () => {
               {status === "error" && (
                 <>
                   <XCircle className="w-16 h-16 text-red-400 mx-auto" />
-                  <p className="text-red-300 text-lg font-semibold">
-                    ❌ {message}
-                  </p>
+                  <p className="text-red-300 text-lg font-semibold">❌ {message}</p>
                   <button
                     onClick={handleLogin}
                     className="w-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center space-x-3"

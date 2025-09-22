@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { getAdminData } from "../utils/sessionUtils";
 import { useAuth } from "../contexts/AuthContext";
+import { UserRole } from "../types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,10 +16,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!isAuthenticated || !user) {
     console.log(user);
-    return <Navigate to="/app/login" replace />;
+    return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && !user.roles?.includes("super_admin")) {
+  if (adminOnly && !user.roles?.includes(UserRole.SUPER_ADMIN)) {
     return <Navigate to="/app/dashboard" replace />;
   }
 

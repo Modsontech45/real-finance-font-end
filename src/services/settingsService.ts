@@ -1,21 +1,21 @@
-import { apiClient } from './api';
+import { apiClient } from "./api";
 
 export interface UserSettings {
-  theme: 'light' | 'dark' | 'auto';
-  compact_view: boolean;
-  animation_effects: boolean;
+  theme: "light" | "dark" | "auto";
+  compactView: boolean;
+  animationEffects: boolean;
   currency: string;
   timezone: string;
-  date_format: string;
+  dateFormat: string;
   language: string;
 }
 
 export interface NotificationPreferences {
-  email_notifications: boolean;
-  transaction_alerts: boolean;
-  weekly_reports: boolean;
-  security_alerts: boolean;
-  marketing_emails: boolean;
+  emailNotifications: boolean;
+  transactionAlerts: boolean;
+  weeklyReports: boolean;
+  securityAlerts: boolean;
+  marketingEmails: boolean;
 }
 
 export interface SettingsResponse {
@@ -29,56 +29,51 @@ export interface SettingsResponse {
 
 class SettingsService {
   async getSettings(): Promise<UserSettings> {
-    // const response = await apiClient.get<SettingsResponse>('/settings');
-    // return response.data.settings || {
-    //   theme: 'dark',
-    //   compact_view: false,
-    //   animation_effects: true,
-    //   currency: 'USD',
-    //   timezone: 'UTC',
-    //   date_format: 'MM/DD/YYYY',
-    //   language: 'en'
-    // };
-
-    // Mocked response
+    // Mocked response - in real app would call API
     return {
-      theme: 'dark',
-      compact_view: false,
-      animation_effects: true,
-      currency: 'USD',
-      timezone: 'UTC',
-      date_format: 'MM/DD/YYYY',
-      language: 'en'
+      theme: "dark",
+      compactView: false,
+      animationEffects: true,
+      currency: "USD",
+      timezone: "UTC",
+      dateFormat: "MM/DD/YYYY",
+      language: "en",
     };
   }
 
   async updateSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
-    // const response = await apiClient.put<SettingsResponse>('/settings', settings);
-    // return response.data.settings!;
-    return  {
-      theme: 'dark',
-      compact_view: false,
-      animation_effects: true,
-      currency: 'USD',
-      timezone: 'UTC',
-      date_format: 'MM/DD/YYYY',
-      language: 'en'
+    // Mocked response - in real app would call API
+    return {
+      theme: "dark",
+      compactView: false,
+      animationEffects: true,
+      currency: "USD",
+      timezone: "UTC",
+      dateFormat: "MM/DD/YYYY",
+      language: "en",
     };
   }
 
   async getNotificationPreferences(): Promise<NotificationPreferences> {
-    const response = await apiClient.get<SettingsResponse>('/notifications');
-    return response.data.preferences || {
-      email_notifications: true,
-      transaction_alerts: true,
-      weekly_reports: false,
-      security_alerts: true,
-      marketing_emails: false
-    };
+    const response = await apiClient.get<SettingsResponse>("/notifications");
+    return (
+      response.data.preferences || {
+        emailNotifications: true,
+        transactionAlerts: true,
+        weeklyReports: false,
+        securityAlerts: true,
+        marketingEmails: false,
+      }
+    );
   }
 
-  async updateNotificationPreferences(preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
-    const response = await apiClient.put<SettingsResponse>('/notifications', preferences);
+  async updateNotificationPreferences(
+    preferences: Partial<NotificationPreferences>,
+  ): Promise<NotificationPreferences> {
+    const response = await apiClient.put<SettingsResponse>(
+      "/notifications",
+      preferences,
+    );
     return response.data.preferences!;
   }
 }

@@ -51,7 +51,7 @@ const SignupPage: React.FC = () => {
     try {
       await signup(data);
       toast.success(
-        "Account created successfully! Please check your email for verification."
+        "Account created successfully! Please check your email for verification.",
       );
       navigate("/email-verification");
     } catch (error) {
@@ -70,7 +70,10 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  const countryOptions = countries.map((c) => ({ value: c.code, label: c.name }));
+  const countryOptions = countries.map((c) => ({
+    value: c.code,
+    label: c.name,
+  }));
   const selectedCountryData = countries.find((c) => c.code === watchCountry);
 
   return (
@@ -134,7 +137,11 @@ const SignupPage: React.FC = () => {
                     placeholder="Enter phone number"
                   />
                 </div>
-                {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <Input

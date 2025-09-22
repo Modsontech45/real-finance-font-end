@@ -1,40 +1,38 @@
 import { AuthResponse } from "../services/authService";
 
-
 export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
-  MEMBER = 'member',
-  MANAGER = 'manager',
+  SUPER_ADMIN = "super_admin",
+  ADMIN = "admin",
+  MANAGER = "manager",
+  MEMBER = "member",
 }
+
 export interface User {
   id: string;
   firstName: string;
   lastName: string;
-  fullName: string; // e.g., "tande modson"
-  username?: string; // optional if your system uses it
+  fullName: string;
   email: string;
   company?: {
     id: string;
     name: string;
   };
-  company_name?: string; // legacy field if needed
   country?: string;
   phoneNumber?: string | null;
   profilePicture?: string | null;
-  roles: UserRole[]; // actual object has ['super_admin']
-  permissions?: string[]; // e.g., ['*:*']
+  roles: UserRole[];
+  permissions?: string[];
   isEmailVerified?: boolean;
   created_at?: string;
 }
 
-
 export interface Transaction {
   id: string;
-  date: string;
+  transactionDate: string;
+  department: string;
   name: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   comment: string;
   created_at: string;
 }
@@ -42,7 +40,7 @@ export interface Transaction {
 export interface Report {
   id: string;
   title: string;
-  type: 'pdf' | 'text';
+  type: "pdf" | "text";
   content?: string;
   file_url?: string;
   upload_date: string;
@@ -51,7 +49,7 @@ export interface Report {
 
 export interface Subscription {
   id: string;
-  plan: 'free' | 'pro' | 'enterprise';
+  plan: "free" | "pro" | "enterprise";
   expirationDate: string;
   isActive: boolean;
 }
@@ -67,9 +65,9 @@ export interface AuthContextType {
 }
 
 export interface SignupData {
-  firstName:string;
-  lastName:string;
-  companyName: string; 
+  firstName: string;
+  lastName: string;
+  companyName: string;
   country: string;
   phone: string;
   email: string;
@@ -86,7 +84,7 @@ export interface TransactionFormData {
   date: string;
   name: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   comment: string;
 }
 

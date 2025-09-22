@@ -14,15 +14,15 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { getAdminData } from "../../utils/sessionUtils";
+import { User as UserType, UserRole } from "../../types";
 import toast from "react-hot-toast";
 
 const Sidebar: React.FC = () => {
-  const { logout } = useAuth(); // logout should come from AuthContext
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
-  const userData = getAdminData(); // Admin data from local storage
+  const userData: UserType | null = user;
   console.log("[Sidebar] User Data:", userData);
 
   const handleLogout = () => {
@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
   const filteredNavItems = navItems.filter(
     (item) =>
       !item.adminOnly ||
-      (item.adminOnly && userData?.roles?.includes("super_admin"))
+      (item.adminOnly && userData?.roles?.includes(UserRole.SUPER_ADMIN)),
   );
 
   return (

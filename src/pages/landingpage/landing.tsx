@@ -151,7 +151,9 @@ const FinanceLandingPage = () => {
               <div
                 key={index}
                 className={`text-center transition-all duration-1000 ${
-                  isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
+                  isVisible
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-5"
                 }`}
               >
                 <div className="text-3xl md:text-4xl font-bold text-transparent bg-gradient-to-r from-emerald-600 to-white bg-clip-text mb-2">
@@ -171,7 +173,8 @@ const FinanceLandingPage = () => {
             Powerful Features
           </h3>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Everything you need to take complete control of your financial journey
+            Everything you need to take complete control of your financial
+            journey
           </p>
         </div>
 
@@ -185,8 +188,12 @@ const FinanceLandingPage = () => {
               <div className="text-purple-400 mb-4 group-hover:scale-110 transition-transform duration-300">
                 {feature.icon}
               </div>
-              <h4 className="text-xl font-semibold mb-3 text-white">{feature.title}</h4>
-              <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+              <h4 className="text-xl font-semibold mb-3 text-white">
+                {feature.title}
+              </h4>
+              <p className="text-gray-400 leading-relaxed">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Heart } from 'lucide-react';
+import React from "react";
+import { Heart } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
@@ -11,25 +11,16 @@ const Footer: React.FC = () => {
             <span className="text-sm font-semibold text-white">Synctuario</span>
             <Heart className="w-4 h-4 text-red-400" />
           </div>
-          
+
           <div className="flex items-center space-x-6 text-sm text-white/60">
             <span>© 2024 FinanceTracker</span>
-            <a 
-              href="#" 
-              className="hover:text-white/80 transition-colors"
-            >
+            <a href="#" className="hover:text-white/80 transition-colors">
               Privacy Policy
             </a>
-            <a 
-              href="#" 
-              className="hover:text-white/80 transition-colors"
-            >
+            <a href="#" className="hover:text-white/80 transition-colors">
               Terms of Service
             </a>
-            <a 
-              href="#" 
-              className="hover:text-white/80 transition-colors"
-            >
+            <a href="#" className="hover:text-white/80 transition-colors">
               Support
             </a>
           </div>

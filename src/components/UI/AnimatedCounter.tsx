@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useAppearance } from '../../contexts/AppearanceContext';
-import { formatCurrency } from '../../utils/currencies';
+import React, { useEffect, useState } from "react";
+import { useAppearance } from "../../contexts/AppearanceContext";
+import { formatCurrency } from "../../utils/currencies";
 
 interface AnimatedCounterProps {
   value: number;
@@ -14,10 +14,10 @@ interface AnimatedCounterProps {
 const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   value,
   duration = 1000,
-  prefix = '',
-  suffix = '',
+  prefix = "",
+  suffix = "",
   useCurrency = false,
-  className = '',
+  className = "",
 }) => {
   const { settings } = useAppearance();
   const [displayValue, setDisplayValue] = useState(0);
@@ -29,7 +29,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      
+
       // Easing function for smooth animation
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       setDisplayValue(Math.floor(value * easeOutQuart));
@@ -54,11 +54,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
     }
     return `${prefix}${displayValue.toLocaleString()}${suffix}`;
   };
-  return (
-    <span className={className}>
-      {formatValue()}
-    </span>
-  );
+  return <span className={className}>{formatValue()}</span>;
 };
 
 export default AnimatedCounter;

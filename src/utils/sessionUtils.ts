@@ -1,5 +1,7 @@
 // sessionUtils.ts
 
+import { User } from "../types";
+
 // -------------------
 // Session Storage Helpers
 // -------------------
@@ -122,31 +124,15 @@ export const isCompanySelected = (): boolean => {
 };
 
 // -------------------
-// Admin Data Helpers (Names Preserved)
+// User Data Helpers (Updated to use User type)
 // -------------------
 
-export interface AdminData {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
-  roles: string[];
-  permissions?: string[];
-  phoneNumber?: string | null;
-  profilePicture?: string | null;
-  company?: {
-    id: string;
-    name: string;
-  };
-}
-
-export const setAdminData = (admin: AdminData): void => {
-  setLocalData("admin", admin);
+export const setAdminData = (user: User): void => {
+  setLocalData("admin", user);
 };
 
-export const getAdminData = (): AdminData | null => {
-  return getLocalData<AdminData>("admin");
+export const getAdminData = (): User | null => {
+  return getLocalData<User>("admin");
 };
 
 // -------------------
@@ -156,5 +142,6 @@ export const getAdminData = (): AdminData | null => {
 export const sessionLogout = (): void => {
   deleteSessionData("company_id");
   deleteLocalData("admin");
+  deleteLocalData("authToken");
   window.location.href = "/";
 };
