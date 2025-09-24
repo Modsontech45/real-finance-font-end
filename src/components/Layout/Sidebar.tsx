@@ -44,13 +44,10 @@ const Sidebar: React.FC = () => {
     { to: "/app/settings", icon: Settings, label: "Settings", adminOnly: true },
   ];
 
-    // Allow SUPER_ADMIN and MANAGER to see adminOnly items
   const filteredNavItems = navItems.filter(
     (item) =>
       !item.adminOnly ||
-      (item.adminOnly &&
-        (userData?.roles?.includes(UserRole.SUPER_ADMIN) ||
-         userData?.roles?.includes(UserRole.MANAGER)))
+      (item.adminOnly && userData?.roles?.includes(UserRole.SUPER_ADMIN)),
   );
 
   return (

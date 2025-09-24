@@ -23,8 +23,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     const userRoles = user.roles?.map((r) => r.toLowerCase()) || [];
     if (
       !userRoles.includes(UserRole.SUPER_ADMIN) &&
-      !userRoles.includes(UserRole.ADMIN) &&
-      !userRoles.includes(UserRole.MANAGER)
+      !userRoles.includes(UserRole.ADMIN) 
+    
     ) {
       console.log("[ProtectedRoute] Access denied for roles:", userRoles);
       return <Navigate to="/app/dashboard" replace />;
