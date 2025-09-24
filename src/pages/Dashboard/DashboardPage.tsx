@@ -52,6 +52,10 @@ const DashboardPage: React.FC = () => {
     () => user?.roles?.includes(UserRole.SUPER_ADMIN),
     [user?.roles]
   );
+  const isManager = useMemo(
+    () => user?.roles?.includes(UserRole.MANAGER),
+    [user?.roles]
+  );
 
   const {
     register,
@@ -119,8 +123,7 @@ const DashboardPage: React.FC = () => {
         <p className="text-white/80 text-sm lg:text-lg">
           Track your income and expenses in real-time
         </p>
-
-        {isAdmin && (
+        {(isAdmin || isManager) && (
           <div className="flex items-center space-x-3 mt-4 lg:mt-0">
             <Button
               onClick={() => setShowForm(!showForm)}
@@ -211,7 +214,6 @@ const DashboardPage: React.FC = () => {
             className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6"
           >
             <Input
-           
               type="date"
               {...register("date")}
               error={errors.date?.message}
@@ -231,7 +233,6 @@ const DashboardPage: React.FC = () => {
               placeholder="0.00"
             />
             <Select
-             
               {...register("type")}
               error={errors.type?.message}
               options={typeOptions}
