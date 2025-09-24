@@ -5,7 +5,7 @@ import { UserRole } from "../types";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  adminOnly?: boolean;
+  adminOnly?: boolean; // restrict to admin/managers
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -15,12 +15,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, isAuthenticated } = useAuth();
 
   if (!isAuthenticated || !user) {
-    console.log(user);
+    console.log("[ProtectedRoute] User not authenticated:", user);
     return <Navigate to="/login" replace />;
   }
 
-  if (adminOnly && !user.roles?.includes(UserRole.SUPER_ADMIN)) {
-    return <Navigate to="/app/dashboard" replace />;
+  if (adminOnly) {
+    const userRoles = user.roles?.map((r) => r.toLowerCase()) || [];
+    if (
+      !userRoles.includes(UserRole.SUPER_ADMIN) &&
+      !userRoles.includes(UserRole.ADMIN) &&
+      !userRoles.includes(UserRole.MANAGER)
+    ) {
+      console.log("[ProtectedRoute] Access denied for roles:", userRoles);
+      return <Navigate to="/app/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;

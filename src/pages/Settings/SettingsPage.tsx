@@ -57,14 +57,20 @@ const SettingsPage: React.FC = () => {
     securityAlerts: true,
   });
 
-  // Restrict access if not super_admin
-  if (!user?.roles?.includes(UserRole.SUPER_ADMIN)) {
-    return (
-      <div className="p-4 text-red-600 font-semibold">
-        Access denied. You must be a super admin to view this page.
-      </div>
-    );
-  }
+// Restrict access to admin or manager
+// Normalize roles to lowercase for safety
+const userRoles = user?.roles.map((r) => r.toLowerCase()) || [];
+
+if (!userRoles.includes(UserRole.SUPER_ADMIN) && !userRoles.includes(UserRole.MANAGER)) {
+  console.log("[SettingsPage] Access denied for user roles:", userRoles);
+  return (
+    <div className="p-4 text-red-600 font-semibold">
+      Access denied. You must be an admin or manager to view this page.
+    </div>
+  );
+}
+
+
 
   const currencyOptions = currencies.map((currency) => ({
     value: currency.code,
