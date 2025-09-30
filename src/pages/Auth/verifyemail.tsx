@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Shield, CheckCircle, XCircle, Loader2, Mail, ArrowRight } from "lucide-react";
 
-const API_BASE = "https://finance-backendsynctuario.onrender.com/api"; // change to production URL if needed
+const API_BASE = "https://finance-rgg0.onrender.com/api"; // change to production URL if needed
 
 const EmailVerification: React.FC = () => {
   const navigate = useNavigate();

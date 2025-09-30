@@ -1,5 +1,5 @@
-const API_BASE_URL = "https://finance-backendsynctuario.onrender.com/api"; //|| 'http://localhost:3000/api';
-
+const API_BASE_URL = "https://finance-rgg0.onrender.com/api"; //|| 'http://localhost:3000/api';
+// const API_BASE_URL = 'http://localhost:3000/api';
 // API client configuration
 class ApiClient {
   private baseURL: string;
