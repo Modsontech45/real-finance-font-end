@@ -23,7 +23,6 @@ const Sidebar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const userData: UserType | null = user;
-  console.log("[Sidebar] User Data:", userData);
 
   const handleLogout = () => {
     logout();
@@ -47,7 +46,7 @@ const Sidebar: React.FC = () => {
   const filteredNavItems = navItems.filter(
     (item) =>
       !item.adminOnly ||
-      (item.adminOnly && userData?.roles?.includes(UserRole.SUPER_ADMIN)),
+      (item.adminOnly && userData?.roles?.includes(UserRole.SUPER_ADMIN))
   );
 
   return (
@@ -58,11 +57,7 @@ const Sidebar: React.FC = () => {
           onClick={toggleMobileMenu}
           className="p-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors"
         >
-          {isMobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
@@ -77,28 +72,24 @@ const Sidebar: React.FC = () => {
       {/* Sidebar */}
       <div
         className={`
-        bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-r border-white/20 
-        w-64 min-h-screen flex flex-col shadow-lg
-        fixed lg:static top-0 left-0 z-40 transform transition-transform duration-300 ease-in-out
-        ${
-          isMobileMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
-        }
-      `}
+          fixed top-0 left-0 w-64 h-screen bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-r border-white/20 shadow-lg flex flex-col
+          transform transition-transform duration-300 ease-in-out z-40
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          overflow-hidden
+        `}
       >
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">FinanceTracker</h1>
-              <p className="text-sm text-white/70">{userData?.company?.name}</p>
-            </div>
+        {/* Logo / Company */}
+        <div className="p-6 border-b border-white/20 flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-white">FinanceTracker</h1>
+            <p className="text-sm text-white/70">{userData?.company?.name}</p>
           </div>
         </div>
 
+        {/* Navigation */}
         <nav className="flex-1 p-4">
           <ul className="space-y-2">
             {filteredNavItems.map(({ to, icon: Icon, label }) => (
@@ -122,18 +113,15 @@ const Sidebar: React.FC = () => {
           </ul>
         </nav>
 
+        {/* User Info & Logout */}
         <div className="p-4 border-t border-white/20">
           <div className="flex items-center space-x-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-white/20 to-white/10 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {userData?.fullName}
-              </p>
-              <p className="text-xs text-white/70 capitalize">
-                {userData?.roles?.[0] || "user"}
-              </p>
+              <p className="text-sm font-medium text-white truncate">{userData?.fullName}</p>
+              <p className="text-xs text-white/70 capitalize">{userData?.roles?.[0] || "user"}</p>
             </div>
           </div>
           <button

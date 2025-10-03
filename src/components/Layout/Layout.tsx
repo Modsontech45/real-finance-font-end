@@ -16,12 +16,13 @@ const Layout: React.FC = () => {
       }`}
     >
       <Sidebar />
-      <main className="flex-1 flex flex-col overflow-auto lg:ml-0">
-        <div className="flex-1">
-          <Outlet />
-        </div>
-        <Footer />
-      </main>
+     <main className="flex-1 flex flex-col overflow-auto lg:ml-64">
+  <div className="flex-1">
+    <Outlet />
+  </div>
+  <Footer />
+</main>
+
     </div>
   );
 };

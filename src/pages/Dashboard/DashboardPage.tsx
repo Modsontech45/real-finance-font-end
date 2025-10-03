@@ -56,7 +56,7 @@ const DashboardPage: React.FC = () => {
     () => user?.roles?.includes(UserRole.MANAGER),
     [user?.roles]
   );
-
+const HARD_CODED_DATE = "2025-10-02";
   const {
     register,
     handleSubmit,
@@ -86,7 +86,7 @@ const DashboardPage: React.FC = () => {
 
   const onSubmit = async (data: TransactionFormData) => {
     try {
-      // console.log("Submitting transaction:", data);
+ 
       await createTransaction(data);
       await refetch();
       reset();
