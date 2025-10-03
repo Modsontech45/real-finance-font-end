@@ -89,7 +89,8 @@ const ReportsPage = () => {
 
   // Helper functions
   const getTransactionDate = (transaction) => {
-    const date = new Date(transaction.createdAt || transaction.date);
+    const date = new Date(transaction.transactionDate || transaction.date);
+    console.log(transaction, date);
     return isNaN(date.getTime()) ? null : date;
   };
 
@@ -209,7 +210,7 @@ const ReportsPage = () => {
         const date = getTransactionDate(t);
         return date && date.getMonth() === monthIndex;
       });
-
+      console.log(monthTransactions);
       const income = monthTransactions
         .filter((t) => t.type === "income")
         .reduce((sum, t) => sum + Number(t.amount), 0);
