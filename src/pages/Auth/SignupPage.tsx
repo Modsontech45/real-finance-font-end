@@ -14,6 +14,10 @@ import toast from "react-hot-toast";
 import { FileText } from "lucide-react";
 import Footer from "../../components/Layout/Footer";
 
+// ✅ Enhanced Password Validation Schema
+const passwordRules =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}[\]:;"'<>,.?/\\|`~]).{8,}$/;
+
 const schema = yup.object({
   firstName: yup.string().required("First name is required").min(3),
   lastName: yup.string().required("Last name is required").min(3),
@@ -21,7 +25,13 @@ const schema = yup.object({
   country: yup.string().required("Country is required"),
   phone: yup.string().required("Phone number is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
-  password: yup.string().required("Password is required").min(6),
+  password: yup
+    .string()
+    .required("Password is required")
+    .matches(
+      passwordRules,
+      "Password must include uppercase, lowercase, number, and special character (min 8 characters)"
+    ),
   confirmPassword: yup
     .string()
     .required("Please confirm your password")
@@ -47,11 +57,11 @@ const SignupPage: React.FC = () => {
   const watchCountry = watch("country");
 
   const onSubmit = async (data: SignupData, event?: React.FormEvent) => {
-    event?.preventDefault(); // prevent default submission
+    event?.preventDefault();
     try {
       await signup(data);
       toast.success(
-        "Account created successfully! Please check your email for verification.",
+        "Account created successfully! Please check your email for verification."
       );
       navigate("/email-verification");
     } catch (error) {
@@ -151,13 +161,14 @@ const SignupPage: React.FC = () => {
                 error={errors.email?.message}
                 placeholder="Enter your email"
               />
+
               <Input
                 label="Password"
                 type="password"
                 showPasswordToggle
                 {...register("password")}
                 error={errors.password?.message}
-                placeholder="Create a password"
+                placeholder="Create a strong password"
               />
               <Input
                 label="Confirm Password"
